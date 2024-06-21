@@ -16,22 +16,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-@SQLDelete(sql = "UPDATE member SET del_date = now() WHERE id=?")
-@SQLRestriction(value = "del_date IS NULL")
 @Table(
     name = "member",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "memberUnique",
-            columnNames = {"user_id", "email"}
+            columnNames = {"user_id", "email", "del_date"}
         )
     }
 )
