@@ -1,5 +1,6 @@
 package com.jh.movieticket.movie.domain;
 
+import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.theater.domain.Theater;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-public class MovieSchedule {
+public class MovieSchedule extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,4 +45,7 @@ public class MovieSchedule {
 
     @Column(nullable = false)
     private LocalDateTime endTime; // 끝나는 시간
+
+    @Column
+    private LocalDateTime delDate; // 삭제날짜
 }
