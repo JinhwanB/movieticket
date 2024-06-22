@@ -8,6 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SeatType {
     AVAILABLE("AVAILABLE"), // 예약 가능한 상태
+    UNAVAILABLE("UNAVAILABLE"), // 사용 불가
     BOOKED("BOOKED"); // 예약 완료된 상태
 
     private final String name;
