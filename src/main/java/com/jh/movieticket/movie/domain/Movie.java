@@ -65,9 +65,6 @@ public class Movie extends BaseTimeEntity {
     private LocalDateTime releaseDate; // 개봉 날짜
 
     @Column(nullable = false)
-    private LocalDateTime endDate; // 종영 날짜
-
-    @Column(nullable = false)
     private double gradeAvg; // 평균 평점
 
     @Column(nullable = false)

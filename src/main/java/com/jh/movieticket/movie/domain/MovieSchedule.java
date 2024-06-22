@@ -37,6 +37,9 @@ public class MovieSchedule {
     private Theater theater; // 상영관
 
     @Column(nullable = false)
+    private LocalDateTime endDate; // 종영 날짜
+
+    @Column(nullable = false)
     private LocalDateTime startTime; // 시작시간
 
     @Column(nullable = false)
