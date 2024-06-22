@@ -1,7 +1,6 @@
 package com.jh.movieticket.movie.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,11 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,14 +43,8 @@ public class Movie extends BaseTimeEntity {
     @Column(nullable = false)
     private String title; // 영화 제목
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-    private List<MovieGenre> genreList; // 장르
-
     @Column(nullable = false)
     private String director; // 감독
-
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-    private List<MovieActor> actorList; // 배우
 
     @Column(nullable = false, length = 5000)
     private String description; // 영화에 대한 설명
