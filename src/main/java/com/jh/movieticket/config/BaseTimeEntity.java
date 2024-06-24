@@ -16,9 +16,9 @@ public class BaseTimeEntity {
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
-    private LocalDateTime regDate; // 생성 날짜
+    private LocalDateTime registerDate; // 생성 날짜
 
     @Column(nullable = false)
     @LastModifiedDate
-    private LocalDateTime chgDate; // 수정 날짜
+    private LocalDateTime changeDate; // 수정 날짜
 }

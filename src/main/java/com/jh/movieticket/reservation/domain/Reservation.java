@@ -55,5 +55,5 @@ public class Reservation extends BaseTimeEntity {
     private int seatNo; // 좌석 번호
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

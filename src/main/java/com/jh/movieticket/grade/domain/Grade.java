@@ -44,5 +44,5 @@ public class Grade extends BaseTimeEntity {
     private String content; // 간단 리뷰
 
     @Column
-    private LocalDateTime delDate; // 삭제 날짜
+    private LocalDateTime deleteDate; // 삭제 날짜
 }

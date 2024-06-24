@@ -39,5 +39,5 @@ public class Genre extends BaseTimeEntity {
     private String name; // 장르 이름
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

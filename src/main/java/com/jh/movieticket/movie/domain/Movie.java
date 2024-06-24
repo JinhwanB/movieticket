@@ -70,5 +70,5 @@ public class Movie extends BaseTimeEntity {
     private ScreenType screenType; // 상영 타입
 
     @Column
-    private LocalDateTime delDate; // 삭제 날짜
+    private LocalDateTime deleteDate; // 삭제 날짜
 }

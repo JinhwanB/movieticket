@@ -37,5 +37,5 @@ public class MovieGenre extends BaseTimeEntity {
     private Genre genre; // 장르
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

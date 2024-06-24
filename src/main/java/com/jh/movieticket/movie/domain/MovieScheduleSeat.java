@@ -44,5 +44,5 @@ public class MovieScheduleSeat extends BaseTimeEntity {
     private SeatType status; // 좌석 상태
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

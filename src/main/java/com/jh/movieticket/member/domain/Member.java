@@ -51,5 +51,5 @@ public class Member extends BaseTimeEntity {
     private Role role; // 권한
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

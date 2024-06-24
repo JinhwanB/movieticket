@@ -28,5 +28,5 @@ public class Actor extends BaseTimeEntity {
     private String name; // 배우 이름
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

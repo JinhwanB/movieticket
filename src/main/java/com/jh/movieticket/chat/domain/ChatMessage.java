@@ -39,5 +39,5 @@ public class ChatMessage {
     private String message; // 메시지 내용
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

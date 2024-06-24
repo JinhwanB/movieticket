@@ -35,5 +35,5 @@ public class Seat extends BaseTimeEntity {
     private Theater theater; // 상영관
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }

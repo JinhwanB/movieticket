@@ -37,5 +37,5 @@ public class ChatRoom extends BaseTimeEntity {
     private Member member; // 회원
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }
