@@ -29,11 +29,11 @@ public class ChatRoom extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member1_id", nullable = false)
+    @JoinColumn(name = "admin_id", nullable = false)
     private Member admin; // 관리자
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member2_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member; // 회원
 
     @Column
