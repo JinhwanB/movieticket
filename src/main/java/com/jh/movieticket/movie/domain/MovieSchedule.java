@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,7 +39,7 @@ public class MovieSchedule extends BaseTimeEntity {
     private Theater theater; // 상영관
 
     @Column(nullable = false)
-    private LocalDateTime endDate; // 종영 날짜
+    private LocalDate endDate; // 종영 날짜
 
     @Column(nullable = false)
     private LocalDateTime startTime; // 시작시간
@@ -47,5 +48,5 @@ public class MovieSchedule extends BaseTimeEntity {
     private LocalDateTime endTime; // 끝나는 시간
 
     @Column
-    private LocalDateTime delDate; // 삭제날짜
+    private LocalDateTime deleteDate; // 삭제날짜
 }
