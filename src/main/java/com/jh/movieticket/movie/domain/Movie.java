@@ -8,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -23,15 +21,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-@Table(
-    name = "movie",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "movieUnique",
-            columnNames = {"title", "del_date"}
-        )
-    }
-)
 public class Movie extends BaseTimeEntity {
 
     @Id

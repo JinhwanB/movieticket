@@ -11,8 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,15 +23,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-@Table(
-    name = "reservation",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "reservationUnique",
-            columnNames = {"reservation_number", "del_date"}
-        )
-    }
-)
 public class Reservation extends BaseTimeEntity {
 
     @Id
