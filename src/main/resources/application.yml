@@ -1,3 +1,46 @@
 spring:
   application:
     name: movieticket
+
+  # 404 에러 핸들링을 위한 설정
+  web:
+    resources:
+      add-mappings: false
+
+  # 데이터베이스
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: mysql
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        highlight_sql: true
+  datasource:
+    username: ${MYSQL_USER_NAME} # 환경 변수
+    password: ${MYSQL_PWD} # 환경 변수
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/movieticket?characterEncoding=UTF-8
+
+  # redis
+  data:
+    redis:
+      port: 6379
+      host: localhost
+  cache:
+    type: redis
+
+  # JWT 시크릿 키
+  jwt:
+    secret: ${JWT_SECRET} # 환경 변수
+
+# 로그
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: info
+        type:
+          descriptor:
+            sql: trace
