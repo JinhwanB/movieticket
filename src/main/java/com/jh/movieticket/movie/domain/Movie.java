@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -53,7 +54,7 @@ public class Movie extends BaseTimeEntity {
     private String totalShowTime; // 총 상영 시간
 
     @Column(nullable = false)
-    private LocalDateTime releaseDate; // 개봉 날짜
+    private LocalDate releaseDate; // 개봉 날짜
 
     @Column(nullable = false)
     private double gradeAvg; // 평균 평점
