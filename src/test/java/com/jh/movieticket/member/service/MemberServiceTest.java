@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberModifyDto.Request;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignInDto.Response;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
@@ -38,6 +40,7 @@ class MemberServiceTest {
     VerifyCodeDto.Request verifyCodeRequest;
     MemberSignUpDto.Request signUpRequest;
     MemberSignInDto.Request signInRequest;
+    MemberModifyDto.Request modifyRequest;
 
     @MockBean
     MemberRepository memberRepository;
@@ -55,9 +58,10 @@ class MemberServiceTest {
     ValueOperations<String, String> valueOperations;
 
     @BeforeEach
-    void set(){
+    void set() {
 
-        memberService = new MemberService(memberRepository, passwordEncoder, mailService, redisTemplate);
+        memberService = new MemberService(memberRepository, passwordEncoder, mailService,
+            redisTemplate);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         verifyCodeRequest = VerifyCodeDto.Request.builder()
@@ -76,11 +80,17 @@ class MemberServiceTest {
             .userId("test")
             .userPw("1234")
             .build();
+
+        modifyRequest = MemberModifyDto.Request.builder()
+            .userId("test")
+            .userPw("2345")
+            .email("test@gmail.com")
+            .build();
     }
 
     @Test
     @DisplayName("이메일로 코드 발송")
-    void sendEmailCode(){
+    void sendEmailCode() {
 
         String email = "test@gmail.com";
         String code = "1234";
@@ -99,7 +109,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("이메일로 코드 발송 실패 - 중복된 이메일")
-    void sendEmailCodeFail(){
+    void sendEmailCodeFail() {
 
         String email = "test@gmail.com";
 
@@ -110,7 +120,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("입력받은 코드 확인")
-    void verifyCode(){
+    void verifyCode() {
 
         String code = "1234";
 
@@ -121,7 +131,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("입력받은 코드 확인 실패 - 올바르지 않은 입력")
-    void verifyCodeFail(){
+    void verifyCodeFail() {
 
         String code = "1235";
 
@@ -132,7 +142,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("회원가입")
-    void register(){
+    void register() {
 
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
@@ -144,26 +154,28 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("회원가입 실패 - 중복된 아이디")
-    void registerFail1(){
+    void registerFail1() {
 
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(true);
 
-        assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(MemberException.class);
+        assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(
+            MemberException.class);
     }
 
     @Test
     @DisplayName("회원가입 실패 - 중복된 이메일")
-    void registerFail2(){
+    void registerFail2() {
 
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(true);
 
-        assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(MemberException.class);
+        assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(
+            MemberException.class);
     }
 
     @Test
     @DisplayName("로그인")
-    void login(){
+    void login() {
 
         Member member = Member.builder()
             .id(1L)
@@ -173,7 +185,8 @@ class MemberServiceTest {
             .email("test@naver.com")
             .build();
 
-        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.of(member));
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
         when(passwordEncoder.matches(any(), any())).thenReturn(true);
 
         Response signInResponse = memberService.login(signInRequest);
@@ -183,16 +196,17 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("로그인 실패 - 없는 회원")
-    void loginFail1(){
+    void loginFail1() {
 
         when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(MemberException.class);
+        assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(
+            MemberException.class);
     }
 
     @Test
     @DisplayName("로그인 실패 - 비밀번호 다름")
-    void loginFail2(){
+    void loginFail2() {
 
         Member member = Member.builder()
             .id(1L)
@@ -202,15 +216,17 @@ class MemberServiceTest {
             .email("test@naver.com")
             .build();
 
-        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.of(member));
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
         when(passwordEncoder.matches(any(), any())).thenReturn(false);
 
-        assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(MemberException.class);
+        assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(
+            MemberException.class);
     }
 
     @Test
     @DisplayName("회원 조회")
-    void verifyMember(){
+    void verifyMember() {
 
         Member member = Member.builder()
             .id(1L)
@@ -220,7 +236,8 @@ class MemberServiceTest {
             .email("test@naver.com")
             .build();
 
-        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.of(member));
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
 
         MemberVerifyDto.Response verifiedMember = memberService.verifyMember("test");
 
@@ -229,10 +246,87 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("회원 조회 실패 - 없는 회원")
-    void verifyMemberFail(){
+    void verifyMemberFail() {
 
         when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> memberService.verifyMember("test")).isInstanceOf(MemberException.class);
+        assertThatThrownBy(() -> memberService.verifyMember("test")).isInstanceOf(
+            MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정")
+    void modifyMember() {
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .role(Role.ROLE_USER)
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
+        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
+        when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
+
+        MemberModifyDto.Response modifyMember = memberService.modifyMember("test", modifyRequest);
+
+        assertThat(modifyMember.getEmail()).isEqualTo(modifyRequest.getEmail());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 없는 회원")
+    void modifyMemberFail1() {
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> memberService.modifyMember("test", modifyRequest)).isInstanceOf(
+            MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 중복된 아이디")
+    void modifyMemberFail2() {
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .role(Role.ROLE_USER)
+            .build();
+        Request otherRequest = modifyRequest.toBuilder()
+            .userId("table")
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
+        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(true);
+
+        assertThatThrownBy(() -> memberService.modifyMember("test", otherRequest)).isInstanceOf(
+            MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 중복된 이메일")
+    void modifyMemberFail3() {
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .role(Role.ROLE_USER)
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
+        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
+        when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(true);
+
+        assertThatThrownBy(() -> memberService.modifyMember("test", modifyRequest)).isInstanceOf(
+            MemberException.class);
     }
 }
