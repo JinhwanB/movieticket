@@ -10,11 +10,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jh.movieticket.mail.service.MailService;
+import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberSignInDto;
+import com.jh.movieticket.member.dto.MemberSignInDto.Response;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +36,7 @@ class MemberServiceTest {
     MemberService memberService;
     VerifyCodeDto.Request verifyCodeRequest;
     MemberSignUpDto.Request signUpRequest;
+    MemberSignInDto.Request signInRequest;
 
     @MockBean
     MemberRepository memberRepository;
@@ -64,6 +69,11 @@ class MemberServiceTest {
             .memberPw("1234")
             .email("test@gmail.com")
             .role(Role.ROLE_USER)
+            .build();
+
+        signInRequest = MemberSignInDto.Request.builder()
+            .userId("test")
+            .userPw("1234")
             .build();
     }
 
@@ -148,5 +158,52 @@ class MemberServiceTest {
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(true);
 
         assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(MemberException.class);
+    }
+
+    @Test
+    @DisplayName("로그인")
+    void login(){
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1234")
+            .role(Role.ROLE_USER)
+            .email("test@naver.com")
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches(any(), any())).thenReturn(true);
+
+        Response signInResponse = memberService.login(signInRequest);
+
+        assertThat(signInResponse.getUserId()).isEqualTo("test");
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 없는 회원")
+    void loginFail1(){
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(MemberException.class);
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 비밀번호 다름")
+    void loginFail2(){
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1235")
+            .role(Role.ROLE_USER)
+            .email("test@naver.com")
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches(any(), any())).thenReturn(false);
+
+        assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(MemberException.class);
     }
 }
