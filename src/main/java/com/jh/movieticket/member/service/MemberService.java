@@ -4,6 +4,7 @@ import com.jh.movieticket.config.CacheName;
 import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.MemberVerifyDto;
@@ -130,6 +131,46 @@ public class MemberService implements UserDetailsService {
         }
 
         return member.toLoginResponse();
+    }
+
+    /**
+     * 회원 정보 수정
+     *
+     * @param userId  수정할 회원 아이디
+     * @param request 수정할 정보
+     * @return 수정된 정보
+     */
+    public MemberModifyDto.Response modifyMember(String userId, MemberModifyDto.Request request) {
+
+        Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
+            .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        String modifiedId = request.getUserId();
+        String modifiedPw = request.getUserPw();
+        String modifiedEmail = request.getEmail();
+
+        // 기존의 아이디랑 다르고 중복되는 아이디인 경우
+        if (!modifiedId.equals(member.getUserId()) && memberRepository.existsByUserIdAndDeleteDate(
+            modifiedId, null)) {
+            throw new MemberException(MemberErrorCode.EXIST_USER_ID);
+        }
+
+        // 기존의 이메일과 다르고 중복되는 이메일인 경우
+        if (!modifiedEmail.equals(member.getEmail()) && memberRepository.existsByEmailAndDeleteDate(
+            modifiedEmail, null)) {
+            throw new MemberException(MemberErrorCode.EXIST_EMAIL);
+        }
+
+        String encodedPw = passwordEncoder.encode(modifiedPw);
+
+        Member modifiedMember = member.toBuilder()
+            .userId(modifiedId)
+            .userPW(encodedPw)
+            .email(modifiedEmail)
+            .build();
+        memberRepository.save(modifiedMember);
+
+        return modifiedMember.toModifyResponse();
     }
 
     /**
