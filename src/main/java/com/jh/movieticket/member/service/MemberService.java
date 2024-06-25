@@ -1,6 +1,9 @@
 package com.jh.movieticket.member.service;
 
 import com.jh.movieticket.mail.service.MailService;
+import com.jh.movieticket.member.domain.Member;
+import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
@@ -68,6 +71,40 @@ public class MemberService implements UserDetailsService {
         }
 
         return false;
+    }
+
+    /**
+     * 회원가입
+     *
+     * @param request 회원 아이디, 비밀번호, 이메일, 권한
+     * @return 회원가입한 아이디
+     */
+    public String register(MemberSignUpDto.Request request) {
+
+        String userId = request.getMemberId();
+        String userPw = request.getMemberPw();
+        String email = request.getEmail();
+        Role role = request.getRole();
+
+        if (memberRepository.existsByUserIdAndDeleteDate(userId, null)) { // 중복된 아이디인 경우
+            throw new MemberException(MemberErrorCode.EXIST_USER_ID);
+        }
+
+        if (memberRepository.existsByEmailAndDeleteDate(email, null)) { // 중복된 이메일인 경우
+            throw new MemberException(MemberErrorCode.EXIST_EMAIL);
+        }
+
+        String encodedPw = passwordEncoder.encode(userPw); // 비밀번호 암호화
+
+        Member member = Member.builder()
+            .userId(userId)
+            .userPW(encodedPw)
+            .email(email)
+            .role(role)
+            .build();
+        memberRepository.save(member);
+
+        return userId;
     }
 
     /**
