@@ -65,8 +65,8 @@ class MemberServiceTest {
             .build();
 
         signUpRequest = MemberSignUpDto.Request.builder()
-            .memberId("test")
-            .memberPw("1234")
+            .userId("test")
+            .userPw("1234")
             .email("test@gmail.com")
             .role(Role.ROLE_USER)
             .build();
@@ -138,7 +138,7 @@ class MemberServiceTest {
 
         String memberId = memberService.register(signUpRequest);
 
-        assertThat(memberId).isEqualTo(signUpRequest.getMemberId());
+        assertThat(memberId).isEqualTo(signUpRequest.getUserId());
     }
 
     @Test
