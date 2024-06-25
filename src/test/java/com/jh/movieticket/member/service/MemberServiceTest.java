@@ -15,6 +15,7 @@ import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignInDto.Response;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
@@ -205,5 +206,33 @@ class MemberServiceTest {
         when(passwordEncoder.matches(any(), any())).thenReturn(false);
 
         assertThatThrownBy(() -> memberService.login(signInRequest)).isInstanceOf(MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원 조회")
+    void verifyMember(){
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1234")
+            .role(Role.ROLE_USER)
+            .email("test@naver.com")
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.of(member));
+
+        MemberVerifyDto.Response verifiedMember = memberService.verifyMember("test");
+
+        assertThat(verifiedMember.getUserId()).isEqualTo("test");
+    }
+
+    @Test
+    @DisplayName("회원 조회 실패 - 없는 회원")
+    void verifyMemberFail(){
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> memberService.verifyMember("test")).isInstanceOf(MemberException.class);
     }
 }
