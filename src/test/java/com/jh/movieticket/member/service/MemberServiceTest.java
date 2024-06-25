@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jh.movieticket.mail.service.MailService;
+import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class MemberServiceTest {
 
     MemberService memberService;
+    VerifyCodeDto.Request verifyCodeRequest;
 
     @MockBean
     MemberRepository memberRepository;
@@ -48,6 +50,11 @@ class MemberServiceTest {
 
         memberService = new MemberService(memberRepository, passwordEncoder, mailService, redisTemplate);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        verifyCodeRequest = VerifyCodeDto.Request.builder()
+            .email("test@gmail.com")
+            .code("1234")
+            .build();
     }
 
     @Test
@@ -78,5 +85,27 @@ class MemberServiceTest {
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(true);
 
         assertThatThrownBy(() -> memberService.sendCode(email)).isInstanceOf(MemberException.class);
+    }
+
+    @Test
+    @DisplayName("입력받은 코드 확인")
+    void verifyCode(){
+
+        String code = "1234";
+
+        when(redisTemplate.opsForValue().get(any())).thenReturn(code);
+
+        assertThat(memberService.verifyCode(verifyCodeRequest)).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("입력받은 코드 확인 실패 - 올바르지 않은 입력")
+    void verifyCodeFail(){
+
+        String code = "1235";
+
+        when(redisTemplate.opsForValue().get(any())).thenReturn(code);
+
+        assertThat(memberService.verifyCode(verifyCodeRequest)).isEqualTo(false);
     }
 }
