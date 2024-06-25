@@ -1,5 +1,6 @@
 package com.jh.movieticket.member.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,10 @@ public class MemberSignInDto {
     @Builder(toBuilder = true)
     public static class Request{
 
+        @NotBlank(message = "아이디를 입력해주세요.")
         private String userId; // 아이디
+
+        @NotBlank(message = "비밀번호를 입력해주세요.")
         private String userPw; // 비밀번호
     }
 
