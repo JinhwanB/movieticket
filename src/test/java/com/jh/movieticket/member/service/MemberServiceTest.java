@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jh.movieticket.mail.service.MailService;
+import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
@@ -29,6 +31,7 @@ class MemberServiceTest {
 
     MemberService memberService;
     VerifyCodeDto.Request verifyCodeRequest;
+    MemberSignUpDto.Request signUpRequest;
 
     @MockBean
     MemberRepository memberRepository;
@@ -54,6 +57,13 @@ class MemberServiceTest {
         verifyCodeRequest = VerifyCodeDto.Request.builder()
             .email("test@gmail.com")
             .code("1234")
+            .build();
+
+        signUpRequest = MemberSignUpDto.Request.builder()
+            .memberId("test")
+            .memberPw("1234")
+            .email("test@gmail.com")
+            .role(Role.ROLE_USER)
             .build();
     }
 
@@ -107,5 +117,36 @@ class MemberServiceTest {
         when(redisTemplate.opsForValue().get(any())).thenReturn(code);
 
         assertThat(memberService.verifyCode(verifyCodeRequest)).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("회원가입")
+    void register(){
+
+        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
+        when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
+
+        String memberId = memberService.register(signUpRequest);
+
+        assertThat(memberId).isEqualTo(signUpRequest.getMemberId());
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 중복된 아이디")
+    void registerFail1(){
+
+        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(true);
+
+        assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 중복된 이메일")
+    void registerFail2(){
+
+        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
+        when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(true);
+
+        assertThatThrownBy(() -> memberService.register(signUpRequest)).isInstanceOf(MemberException.class);
     }
 }
