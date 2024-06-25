@@ -1,0 +1,89 @@
+package com.jh.movieticket.member.service;
+
+import com.jh.movieticket.mail.service.MailService;
+import com.jh.movieticket.member.dto.VerifyCodeDto;
+import com.jh.movieticket.member.exception.MemberErrorCode;
+import com.jh.movieticket.member.exception.MemberException;
+import com.jh.movieticket.member.repository.MemberRepository;
+import java.util.Random;
+import java.util.stream.IntStream;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class MemberService implements UserDetailsService {
+
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        return memberRepository.findByUserIdAndDeleteDate(username, null)
+            .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    /**
+     * 인증코드를 생성하여 이메일로 보낸다. 인증코드를 redis 에 저장하여 후에 인증코드를 알맞게 작성했는지 확인한다.
+     *
+     * @param email 회원 이메일
+     */
+    public void sendCode(String email) {
+
+        if (memberRepository.existsByEmailAndDeleteDate(email, null)) {
+            throw new MemberException(MemberErrorCode.EXIST_EMAIL);
+        }
+
+        String title = "영화 사이트 회원가입을 위한 인증코드";
+        String code = createCode();
+        String text = "인증코드 : " + code;
+        mailService.sendEmail(email, title, text);
+        redisTemplate.opsForValue().set(email, code); // redisTemplate 에 저장
+    }
+
+    /**
+     * 입력한 코드가 올바른지 확인한다. redis 의 저장된 값이랑 비교
+     *
+     * @param request 사용자의 이메일과 입력한 인증코드
+     * @return 올바르게 입력 시 true, 아니면 false
+     */
+    public boolean verifyCode(VerifyCodeDto.Request request) {
+
+        String email = request.getEmail();
+        String code = request.getCode();
+        String originalCode = redisTemplate.opsForValue().get(email);
+        if (code.equals(originalCode)) { // 인증 코드를 알맞게 작성한 경우
+            redisTemplate.delete(email); // redis 에서 제거
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 이메일 인증을 위한 인증코드 생성 메서드
+     *
+     * @return 생성한 인증코드를 리턴
+     */
+    private String createCode() {
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        IntStream.range(0, 4)
+            .forEach(i -> {
+                int randomNum = random.nextInt(10); // 0~9 까지 랜덤 숫자
+                sb.append(randomNum);
+            });
+
+        return sb.toString();
+    }
+}
