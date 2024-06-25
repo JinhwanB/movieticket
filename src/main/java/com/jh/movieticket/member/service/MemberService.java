@@ -1,10 +1,12 @@
 package com.jh.movieticket.member.service;
 
+import com.jh.movieticket.config.CacheName;
 import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
@@ -12,6 +14,7 @@ import com.jh.movieticket.member.repository.MemberRepository;
 import java.util.Random;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -129,7 +132,21 @@ public class MemberService implements UserDetailsService {
         return member.toLoginResponse();
     }
 
-    public
+    /**
+     * 회원 조회
+     *
+     * @param userId 조회할 회원 아이디
+     * @return 조회된 회원 정보
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
+    public MemberVerifyDto.Response verifyMember(String userId) {
+
+        Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
+            .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        return member.toVerifyResponse();
+    }
 
     /**
      * 이메일 인증을 위한 인증코드 생성 메서드
