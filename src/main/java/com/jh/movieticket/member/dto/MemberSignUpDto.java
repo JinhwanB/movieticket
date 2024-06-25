@@ -26,7 +26,7 @@ public class MemberSignUpDto {
         private String memberPw; // 비밀번호
 
         @NotBlank(message = "이메일을 입력해주세요.")
-        @Pattern(regexp = "^[A-Za-z0-9_\\\\.\\\\-]+@[A-Za-z0-9\\\\-]+\\\\.[A-Za-z0-9\\\\-]+$", message = "올바른 이메일을 입력해주세요.")
+        @Pattern(regexp = "^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", message = "올바른 이메일을 입력해주세요.")
         private String email; // 이메일
 
         @IsEnum(message = "올바른 권한을 입력해주세요.")
