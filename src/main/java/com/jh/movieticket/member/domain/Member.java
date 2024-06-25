@@ -2,6 +2,7 @@ package com.jh.movieticket.member.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.member.dto.MemberSignInDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -79,6 +80,20 @@ public class Member extends BaseTimeEntity implements UserDetails {
         return MemberSignInDto.Response.builder()
             .userId(userId)
             .role(List.of(role.getName()))
+            .build();
+    }
+
+    /**
+     * Entity -> VerifyResponse
+     *
+     * @return VerifyResponse
+     */
+    public MemberVerifyDto.Response toVerifyResponse() {
+
+        return MemberVerifyDto.Response.builder()
+            .userId(userId)
+            .userPw(userPW)
+            .email(email)
             .build();
     }
 }
