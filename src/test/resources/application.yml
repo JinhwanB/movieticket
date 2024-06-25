@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: movieticket
+
+  # 404 에러 핸들링을 위한 설정
+  web:
+    resources:
+      add-mappings: false
+
+  # 데이터베이스
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: h2
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        highlight_sql: true
+  datasource:
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:movieticket
+
+  # mail
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_ID}
+    password: ${MAIL_PW}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 1800000 # 30분
+
+  # redis
+  data:
+    redis:
+      port: 6379
+      host: localhost
+  cache:
+    type: redis
+
+  # JWT 시크릿 키
+  jwt:
+    secret: ${JWT_SECRET} # 환경 변수
+
+# 로그
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: info
+        type:
+          descriptor:
+            sql: trace
