@@ -3,6 +3,7 @@ package com.jh.movieticket.member.service;
 import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
@@ -105,6 +106,27 @@ public class MemberService implements UserDetailsService {
         memberRepository.save(member);
 
         return userId;
+    }
+
+    /**
+     * 로그인
+     *
+     * @param request 아이디와 비밀번호
+     * @return 아이디와 권한
+     */
+    public MemberSignInDto.Response login(MemberSignInDto.Request request) {
+
+        String userId = request.getUserId();
+        String userPw = request.getUserPw();
+
+        Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
+            .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        if (!passwordEncoder.matches(userPw, member.getUserPW())) { // 비밀번호가 다른 경우
+            throw new MemberException(MemberErrorCode.NOT_MATCH_PASSWORD);
+        }
+
+        return member.toLoginResponse();
     }
 
     /**
