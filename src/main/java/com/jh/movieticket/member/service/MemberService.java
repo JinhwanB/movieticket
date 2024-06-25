@@ -82,8 +82,8 @@ public class MemberService implements UserDetailsService {
      */
     public String register(MemberSignUpDto.Request request) {
 
-        String userId = request.getMemberId();
-        String userPw = request.getMemberPw();
+        String userId = request.getUserId();
+        String userPw = request.getUserPw();
         String email = request.getEmail();
         Role role = request.getRole();
 
@@ -128,6 +128,8 @@ public class MemberService implements UserDetailsService {
 
         return member.toLoginResponse();
     }
+
+    public
 
     /**
      * 이메일 인증을 위한 인증코드 생성 메서드

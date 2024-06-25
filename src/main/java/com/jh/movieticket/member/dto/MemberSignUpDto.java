@@ -20,10 +20,10 @@ public class MemberSignUpDto {
     public static class Request{
 
         @NotBlank(message = "아이디를 입력해주세요.")
-        private String memberId; // 아이디
+        private String userId; // 아이디
 
         @NotBlank(message = "비밀번호를 입력해주세요.")
-        private String memberPw; // 비밀번호
+        private String userPw; // 비밀번호
 
         @NotBlank(message = "이메일을 입력해주세요.")
         @Pattern(regexp = "^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", message = "올바른 이메일을 입력해주세요.")
