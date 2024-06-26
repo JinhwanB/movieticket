@@ -17,9 +17,6 @@ public class MemberModifyDto {
     @Builder(toBuilder = true)
     public static class Request{
 
-        @NotBlank(message = "아이디를 입력해주세요.")
-        private String userId; // 수정할 아이디
-
         @NotBlank(message = "비밀번호를 입력해주세요.")
         private String userPw; // 수정할 비밀번호
 
@@ -34,7 +31,7 @@ public class MemberModifyDto {
     @Builder(toBuilder = true)
     public static class Response{
 
-        private String userId; // 수정된 아이디
+        private String userId; // 아이디
         private String userPw; // 수정된 비밀번호
         private String email; // 수정된 이메일
     }

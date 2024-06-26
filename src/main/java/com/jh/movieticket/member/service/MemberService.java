@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+//todo: 회원 삭제 구현, 회원 전체 리스트 조회 구현
 public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
@@ -145,15 +146,8 @@ public class MemberService implements UserDetailsService {
         Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
-        String modifiedId = request.getUserId();
         String modifiedPw = request.getUserPw();
         String modifiedEmail = request.getEmail();
-
-        // 기존의 아이디랑 다르고 중복되는 아이디인 경우
-        if (!modifiedId.equals(member.getUserId()) && memberRepository.existsByUserIdAndDeleteDate(
-            modifiedId, null)) {
-            throw new MemberException(MemberErrorCode.EXIST_USER_ID);
-        }
 
         // 기존의 이메일과 다르고 중복되는 이메일인 경우
         if (!modifiedEmail.equals(member.getEmail()) && memberRepository.existsByEmailAndDeleteDate(
@@ -164,7 +158,6 @@ public class MemberService implements UserDetailsService {
         String encodedPw = passwordEncoder.encode(modifiedPw);
 
         Member modifiedMember = member.toBuilder()
-            .userId(modifiedId)
             .userPW(encodedPw)
             .email(modifiedEmail)
             .build();
