@@ -1,6 +1,7 @@
 package com.jh.movieticket.member.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.movieticket.auth.SecurityConfiguration;
+import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberSignInDto;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -369,4 +372,38 @@ class MemberControllerTest {
     @Test
     @DisplayName("로그아웃")
     @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void logout() throws Exception {
+
+        mockMvc.perform(post("/members/logout"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 - 로그인 하지 않고 로그아웃 요청")
+    void logoutFail1() throws Exception {
+
+        mockMvc.perform(post("/members/logout"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 - refresh 토큰 없음")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void logoutFail2() throws Exception {
+
+        doThrow(TokenException.class).when(tokenProvider).logout(any(), any());
+
+        mockMvc.perform(post("/members/logout"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
 }
