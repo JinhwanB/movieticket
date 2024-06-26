@@ -13,12 +13,16 @@ import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-//todo: 회원 삭제 구현, 회원 전체 리스트 조회 구현, 토큰 재발급
+//todo: 회원 전체 리스트 조회 구현, 토큰 재발급
 public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
@@ -173,6 +177,7 @@ public class MemberService implements UserDetailsService {
      *
      * @param userId 탈퇴할 회원 아이디
      */
+    // todo: 회원 탈퇴 시 자식 엔티티 함께 삭제 구현 예정(채팅방, 채팅 메시지, 예매, 평점)
     @CacheEvict(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
     public void deleteMember(String userId) {
 
@@ -199,6 +204,23 @@ public class MemberService implements UserDetailsService {
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         return member.toVerifyResponse();
+    }
+
+    /**
+     * 회원 전체 리스트 페이징하여 조회
+     *
+     * @param pageable 페이징 방법
+     * @return 페이징된 전체 회원 리스트
+     */
+    @Transactional(readOnly = true)
+    public Page<MemberVerifyDto.Response> allMembers(Pageable pageable) {
+
+        Page<Member> memberList = memberRepository.findAllByDeleteDate(null, pageable);
+        List<MemberVerifyDto.Response> responseList = memberList.getContent().stream()
+            .map(Member::toVerifyResponse)
+            .toList();
+
+        return new PageImpl<>(responseList, pageable, responseList.size());
     }
 
     /**
