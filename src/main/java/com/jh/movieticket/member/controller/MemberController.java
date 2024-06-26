@@ -18,6 +18,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -192,5 +196,22 @@ public class MemberController {
         MemberVerifyDto.Response verifiedMember = memberService.verifyMember(userId);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(verifiedMember));
+    }
+
+    /**
+     * 회원 전체 리스트 페이징하여 조회
+     *
+     * @param pageable 페이징 설정
+     * @return 페이징 처리된 회원 전체 리스트
+     */
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GlobalApiResponse<Page<MemberVerifyDto.Response>>> all(
+        @PageableDefault(sort = "registerDate", direction = Direction.ASC)
+        Pageable pageable) {
+
+        Page<MemberVerifyDto.Response> allMembers = memberService.allMembers(pageable);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(allMembers));
     }
 }
