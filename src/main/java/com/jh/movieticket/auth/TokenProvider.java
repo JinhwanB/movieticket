@@ -6,7 +6,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +45,12 @@ public class TokenProvider {
     }
 
     // refresh 토큰 생성 발급
-    public String generateRefreshToken(String userName, List<String> roles) {
+    public void generateRefreshToken(String userName, List<String> roles, HttpServletResponse response) {
 
-        return createToken(userName, roles, REFRESH_TOKEN_EXPIRE_TIME);
+        String refreshToken = createToken(userName, roles, REFRESH_TOKEN_EXPIRE_TIME);
+        tokenToCookie(refreshToken, response);
+    }
+
     }
 
     // jwt를 사용하여 사용자의 인증 정보 가져오는 메소드
@@ -96,6 +101,7 @@ public class TokenProvider {
         }
     }
 
+    // 토큰 생성
     private String createToken(String userName, List<String> role, long tokenExpiredTime){
 
         Claims claims = Jwts.claims().setSubject(userName);
@@ -111,5 +117,19 @@ public class TokenProvider {
             .setExpiration(expireDate) // 토큰 만료 시간
             .signWith(SignatureAlgorithm.HS512, secret) // 사용할 암호화 알고리즘, 비밀키
             .compact();
+    }
+
+    // 토큰을 쿠키에 저장
+    private void tokenToCookie(String refreshToken, HttpServletResponse response){
+
+        String cookieName = "refreshToken";
+        Cookie cookie = new Cookie(cookieName, refreshToken);
+
+        // 쿠키 속성 설정
+        cookie.setHttpOnly(true); // httpOnly 설정(js 접근 불가)
+        cookie.setSecure(true); // https 설정 (https 외에 통신 불가)
+        cookie.setPath("/"); // 모든 곳에서 쿠키 열람 가능
+
+        response.addCookie(cookie);
     }
 }
