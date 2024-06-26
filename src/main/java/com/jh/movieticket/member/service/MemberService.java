@@ -65,19 +65,17 @@ public class MemberService implements UserDetailsService {
      * 입력한 코드가 올바른지 확인한다. redis 의 저장된 값이랑 비교
      *
      * @param request 사용자의 이메일과 입력한 인증코드
-     * @return 올바르게 입력 시 true, 아니면 false
      */
-    public boolean verifyCode(VerifyCodeDto.Request request) {
+    public void verifyCode(VerifyCodeDto.Request request) {
 
         String email = request.getEmail();
         String code = request.getCode();
         String originalCode = redisTemplate.opsForValue().get(email);
-        if (code.equals(originalCode)) { // 인증 코드를 알맞게 작성한 경우
-            redisTemplate.delete(email); // redis 에서 제거
-            return true;
+        if (!code.equals(originalCode)) { // 인증 코드를 올바르지 않게 작성한 경우
+            throw new MemberException(MemberErrorCode.NOT_MATCH_CODE);
         }
 
-        return false;
+        redisTemplate.delete(email); // redis 에서 제거
     }
 
     /**
