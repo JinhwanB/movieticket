@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -572,6 +573,48 @@ class MemberControllerTest {
         String userId = "test";
 
         mockMvc.perform(delete("/members/member/" + userId))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 조회")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void verify() throws Exception {
+
+        String userId = "test";
+
+        mockMvc.perform(get("/members/member/" + userId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 조회 실패 - 조회할 회원 아이디 작성 x")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void verifyFail1() throws Exception {
+
+        String userId = " ";
+
+        mockMvc.perform(get("/members/member/" + userId))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 조회 실패 - 로그인 x")
+    void verifyFail2() throws Exception {
+
+        String userId = "test";
+
+        mockMvc.perform(get("/members/member/" + userId))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.data").doesNotExist())
