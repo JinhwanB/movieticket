@@ -181,6 +181,10 @@ public class TokenProvider {
     // 쿠키에 저장된 리프레시 토큰 가져오기
     private String getRefreshTokenFromCookie(HttpServletRequest request){
 
+        if(request.getCookies() == null){
+            throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
+        }
+
         Cookie cookie = Arrays.stream(request.getCookies())
             .filter(c -> c.getName().equals(COOKIE_NAME))
             .findAny()
