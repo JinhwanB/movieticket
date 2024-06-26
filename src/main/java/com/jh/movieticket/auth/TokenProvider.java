@@ -75,8 +75,7 @@ public class TokenProvider {
     // refresh 토큰을 쿠키에서 지운다.
     public void logout(HttpServletRequest request, HttpServletResponse response){
 
-        String refreshToken = getRefreshTokenFromCookie(request);
-        deleteRefreshToken(refreshToken, response);
+        deleteRefreshToken(request, response);
     }
 
 
@@ -167,14 +166,24 @@ public class TokenProvider {
     }
 
     // refresh 토큰 쿠키에서 삭제
-    private void deleteRefreshToken(String refreshToken, HttpServletResponse response){
+    private void deleteRefreshToken(HttpServletRequest request, HttpServletResponse response){
 
-        Cookie cookie = new Cookie(COOKIE_NAME, refreshToken);
+        if(request.getCookies() == null){
+            throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
+        }
+
+        Cookie cookie = Arrays.stream(request.getCookies())
+            .filter(c -> c.getName().equals(COOKIE_NAME))
+            .findAny()
+            .orElse(null);
+
+        if(cookie == null){
+            throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
+        }
 
         // 쿠키 속성 설정
         cookie.setPath("/"); // 모든 곳에서 쿠키 열람 가능
         cookie.setMaxAge(0); // 삭제
-
         response.addCookie(cookie);
     }
 
