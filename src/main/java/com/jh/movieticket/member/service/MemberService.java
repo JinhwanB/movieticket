@@ -12,9 +12,11 @@ import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
+import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -164,6 +166,23 @@ public class MemberService implements UserDetailsService {
         memberRepository.save(modifiedMember);
 
         return modifiedMember.toModifyResponse();
+    }
+
+    /**
+     * 회원 탈퇴
+     *
+     * @param userId 탈퇴할 회원 아이디
+     */
+    @CacheEvict(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
+    public void deleteMember(String userId) {
+
+        Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
+            .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        Member deletedMember = member.toBuilder()
+            .deleteDate(LocalDateTime.now())
+            .build();
+        memberRepository.save(deletedMember);
     }
 
     /**
