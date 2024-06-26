@@ -18,7 +18,7 @@ public class VerifyCodeDto {
     public static class Request{
 
         @NotBlank(message = "이메일을 입력해주세요.")
-        @Pattern(regexp = "^[A-Za-z0-9_\\\\.\\\\-]+@[A-Za-z0-9\\\\-]+\\\\.[A-Za-z0-9\\\\-]+$", message = "올바른 이메일을 입력해주세요.")
+        @Pattern(regexp = "^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", message = "올바른 이메일을 입력해주세요.")
         private String email; // 이메일
 
         @NotBlank(message = "인증코드를 입력해주세요.")
