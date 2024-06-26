@@ -53,7 +53,7 @@ public class TokenProvider {
         tokenToCookie(refreshToken, response);
     }
 
-    // refreshToken 재발급
+    // accessToken 재발급
     public String reGenerateAccessToken(HttpServletRequest request, HttpServletResponse response){
 
         String refreshToken = getRefreshTokenFromCookie(request);
