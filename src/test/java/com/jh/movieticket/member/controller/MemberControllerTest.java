@@ -19,6 +19,8 @@ import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto.Response;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
 import java.util.List;
@@ -28,6 +30,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -41,6 +49,7 @@ class MemberControllerTest {
     VerifyCodeDto.Request verifyCodeRequest;
     MemberSignInDto.Request signInRequest;
     MemberModifyDto.Request modifyRequest;
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "registerDate"));
     MockMvc mockMvc;
 
     @Autowired
@@ -619,5 +628,53 @@ class MemberControllerTest {
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.data").doesNotExist())
             .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 전체 리스트 조회")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void all() throws Exception {
+
+        Response member = Response.builder()
+            .userId("test")
+            .userPw("1234")
+            .email("test@naver.com")
+            .build();
+        Response admin = Response.builder()
+            .userId("admin")
+            .userPw("12345")
+            .email("admin@gmail.com")
+            .build();
+        List<MemberVerifyDto.Response> members = List.of(member, admin);
+        Page<MemberVerifyDto.Response> memberList = new PageImpl<>(members, pageable, members.size());
+
+        when(memberService.allMembers(any())).thenReturn(memberList);
+
+        mockMvc.perform(get("/members"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").exists());
+    }
+
+    @Test
+    @DisplayName("회원 전체 리스트 조회 실패 - 로그인 x")
+    void allFail1() throws Exception {
+
+        mockMvc.perform(get("/members"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("회원 전체 리스트 조회 실패 - 권한 없음")
+    @WithMockUser(username = "test")
+    void allFail2() throws Exception {
+
+        mockMvc.perform(get("/members"))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403))
+            .andExpect(jsonPath("$.data").doesNotExist());
     }
 }
