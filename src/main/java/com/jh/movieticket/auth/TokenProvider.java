@@ -68,6 +68,12 @@ public class TokenProvider {
         return parseClaims(token).getSubject();
     }
 
+    // 유저 권한 가져오기
+    public List<String> getUserRole(String token){
+
+        return List.of(String.valueOf(parseClaims(token).get(KEY_ROLES)));
+    }
+
     // 헤더 정보의 토큰을 가져온다.
     public String resolveTokenFromRequest(HttpServletRequest request) {
 
