@@ -15,6 +15,7 @@ import com.jh.movieticket.member.repository.MemberRepository;
 import java.util.Random;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-//todo: 회원 삭제 구현, 회원 전체 리스트 조회 구현
+//todo: 회원 삭제 구현, 회원 전체 리스트 조회 구현, 토큰 재발급
 public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
@@ -141,6 +142,7 @@ public class MemberService implements UserDetailsService {
      * @param request 수정할 정보
      * @return 수정된 정보
      */
+    @CachePut(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
     public MemberModifyDto.Response modifyMember(String userId, MemberModifyDto.Request request) {
 
         Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
