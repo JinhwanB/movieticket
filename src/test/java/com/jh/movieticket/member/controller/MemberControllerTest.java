@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -14,6 +15,7 @@ import com.jh.movieticket.auth.SecurityConfiguration;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
@@ -36,6 +38,7 @@ class MemberControllerTest {
     String signUpRequest;
     VerifyCodeDto.Request verifyCodeRequest;
     MemberSignInDto.Request signInRequest;
+    MemberModifyDto.Request modifyRequest;
     MockMvc mockMvc;
 
     @Autowired
@@ -73,6 +76,11 @@ class MemberControllerTest {
         signInRequest = MemberSignInDto.Request.builder()
             .userId("test")
             .userPw("1234")
+            .build();
+
+        modifyRequest = MemberModifyDto.Request.builder()
+            .userPw("12345")
+            .email("test@gmail.com")
             .build();
     }
 
@@ -412,7 +420,8 @@ class MemberControllerTest {
     @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
     void reGetToken() throws Exception {
 
-        when(tokenProvider.reGenerateAccessToken(any(), any())).thenReturn("jfdasklgjeiofjdslkgjfa");
+        when(tokenProvider.reGenerateAccessToken(any(), any())).thenReturn(
+            "jfdasklgjeiofjdslkgjfa");
 
         mockMvc.perform(post("/members/token"))
             .andExpect(status().isOk())
@@ -427,6 +436,99 @@ class MemberControllerTest {
     void reGetTokenFail() throws Exception {
 
         mockMvc.perform(post("/members/token"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void modify() throws Exception {
+
+        String userId = "test";
+        MemberModifyDto.Response modifiedMember = MemberModifyDto.Response.builder()
+            .userId(userId)
+            .userPw(modifyRequest.getUserPw())
+            .email(modifyRequest.getEmail())
+            .build();
+
+        when(memberService.modifyMember(any(), any())).thenReturn(modifiedMember);
+
+        mockMvc.perform(put("/members/member?userId=" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 수정할 회원 아이디 작성 x")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void modifyFail1() throws Exception {
+
+        String userId = "";
+
+        mockMvc.perform(put("/members/member?userId=" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 수정할 정보 중 비밀번호 작성 x")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void modifyFail2() throws Exception {
+
+        String userId = "test";
+        MemberModifyDto.Request badRequest = modifyRequest.toBuilder()
+            .userPw("")
+            .build();
+
+        mockMvc.perform(put("/members/member?userId=" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 수정할 정보 중 이메일 작성 x")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void modifyFail3() throws Exception {
+
+        String userId = "test";
+        MemberModifyDto.Request badRequest = modifyRequest.toBuilder()
+            .email("")
+            .build();
+
+        mockMvc.perform(put("/members/member?userId=" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 실패 - 로그인 x")
+    void modifyFail4() throws Exception {
+
+        String userId = "test";
+
+        mockMvc.perform(put("/members/member?userId=" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.data").doesNotExist())
