@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -137,7 +138,8 @@ class MemberServiceTest {
 
         when(redisTemplate.opsForValue().get(any())).thenReturn(code);
 
-        assertThatThrownBy(() -> memberService.verifyCode(verifyCodeRequest)).isInstanceOf(MemberException.class);
+        assertThatThrownBy(() -> memberService.verifyCode(verifyCodeRequest)).isInstanceOf(
+            MemberException.class);
     }
 
     @Test
@@ -304,6 +306,39 @@ class MemberServiceTest {
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(true);
 
         assertThatThrownBy(() -> memberService.modifyMember("test", modifyRequest)).isInstanceOf(
+            MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴")
+    void delete() {
+
+        Member member = Member.builder()
+            .id(1L)
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .role(Role.ROLE_USER)
+            .deleteDate(null)
+            .build();
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.of(member));
+
+        memberService.deleteMember("test");
+
+        ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
+        verify(memberRepository, times(1)).save(memberCaptor.capture());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 없는 회원")
+    void deleteFail() {
+
+        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
+            Optional.empty());
+
+        assertThatThrownBy(() -> memberService.deleteMember("test")).isInstanceOf(
             MemberException.class);
     }
 }
