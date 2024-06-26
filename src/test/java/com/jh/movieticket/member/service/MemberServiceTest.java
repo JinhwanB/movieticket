@@ -124,7 +124,9 @@ class MemberServiceTest {
 
         when(redisTemplate.opsForValue().get(any())).thenReturn(code);
 
-        assertThat(memberService.verifyCode(verifyCodeRequest)).isEqualTo(true);
+        memberService.verifyCode(verifyCodeRequest);
+
+        verify(redisTemplate, times(1)).delete(verifyCodeRequest.getEmail());
     }
 
     @Test
@@ -135,7 +137,7 @@ class MemberServiceTest {
 
         when(redisTemplate.opsForValue().get(any())).thenReturn(code);
 
-        assertThat(memberService.verifyCode(verifyCodeRequest)).isEqualTo(false);
+        assertThatThrownBy(() -> memberService.verifyCode(verifyCodeRequest)).isInstanceOf(MemberException.class);
     }
 
     @Test
