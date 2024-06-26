@@ -13,7 +13,6 @@ import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
-import com.jh.movieticket.member.dto.MemberModifyDto.Request;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignInDto.Response;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
@@ -82,7 +81,6 @@ class MemberServiceTest {
             .build();
 
         modifyRequest = MemberModifyDto.Request.builder()
-            .userId("test")
             .userPw("2345")
             .email("test@gmail.com")
             .build();
@@ -283,29 +281,6 @@ class MemberServiceTest {
         when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> memberService.modifyMember("test", modifyRequest)).isInstanceOf(
-            MemberException.class);
-    }
-
-    @Test
-    @DisplayName("회원 정보 수정 실패 - 중복된 아이디")
-    void modifyMemberFail2() {
-
-        Member member = Member.builder()
-            .id(1L)
-            .userId("test")
-            .userPW("1234")
-            .email("test@naver.com")
-            .role(Role.ROLE_USER)
-            .build();
-        Request otherRequest = modifyRequest.toBuilder()
-            .userId("table")
-            .build();
-
-        when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
-            Optional.of(member));
-        when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(true);
-
-        assertThatThrownBy(() -> memberService.modifyMember("test", otherRequest)).isInstanceOf(
             MemberException.class);
     }
 
