@@ -120,4 +120,21 @@ public class MemberController {
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
     }
+
+    /**
+     * 토큰 재발급
+     *
+     * @param request  HttpServletRequest
+     * @param response HttpServletResponse
+     * @return 성공 시 -> 200 코드와 재발급된 access 토큰, 실패 시 -> 에러코드와 에러메시지
+     */
+    @PostMapping("/token")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<GlobalApiResponse<String>> reGetAccessToken(HttpServletRequest request,
+        HttpServletResponse response) {
+
+        String accessToken = tokenProvider.reGenerateAccessToken(request, response);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(accessToken));
+    }
 }
