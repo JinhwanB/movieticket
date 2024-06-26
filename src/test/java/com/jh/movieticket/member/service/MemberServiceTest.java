@@ -20,6 +20,7 @@ import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +29,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +48,7 @@ class MemberServiceTest {
     MemberSignUpDto.Request signUpRequest;
     MemberSignInDto.Request signInRequest;
     MemberModifyDto.Request modifyRequest;
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "registerDate"));
 
     @MockBean
     MemberRepository memberRepository;
@@ -340,5 +348,26 @@ class MemberServiceTest {
 
         assertThatThrownBy(() -> memberService.deleteMember("test")).isInstanceOf(
             MemberException.class);
+    }
+
+    @Test
+    @DisplayName("회원 전체 리스트 조회")
+    void memberList(){
+
+        Member member = Member.builder()
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .id(1L)
+            .build();
+        List<Member> members = List.of(member);
+        Page<Member> memberList = new PageImpl<>(members, pageable, members.size());
+
+        when(memberRepository.findAllByDeleteDate(any(), any())).thenReturn(memberList);
+
+        Page<MemberVerifyDto.Response> responses = memberService.allMembers(pageable);
+
+        assertThat(responses.getNumberOfElements()).isEqualTo(1);
+        assertThat(responses.getContent().get(0).getUserId()).isEqualTo("test");
     }
 }
