@@ -22,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -147,7 +148,7 @@ public class MemberController {
      * @param request 수정할 정보
      * @return 수정된 정보
      */
-    @PostMapping("/member")
+    @PutMapping("/member")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<GlobalApiResponse<MemberModifyDto.Response>> modify(
         @NotBlank(message = "아이디를 입력해주세요.") @RequestParam String userId,
