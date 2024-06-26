@@ -34,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-//todo: 회원 전체 리스트 조회 구현, 토큰 재발급
 public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
