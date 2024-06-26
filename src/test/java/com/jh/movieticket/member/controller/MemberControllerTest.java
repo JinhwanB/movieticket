@@ -10,8 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.movieticket.auth.TokenProvider;
+import com.jh.movieticket.member.domain.Role;
+import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +30,7 @@ class MemberControllerTest {
 
     String signUpRequest;
     VerifyCodeDto.Request verifyCodeRequest;
+    MemberSignInDto.Request signInRequest;
 
     @Autowired
     MockMvc mockMvc;
@@ -41,7 +45,7 @@ class MemberControllerTest {
     TokenProvider tokenProvider;
 
     @BeforeEach
-    void before(){
+    void before() {
 
         signUpRequest = "{\n"
             + "    \"userId\":\"test\",\n"
@@ -54,6 +58,11 @@ class MemberControllerTest {
             .email("test@naver.com")
             .code("1234")
             .build();
+
+        signInRequest = MemberSignInDto.Request.builder()
+            .userId("test")
+            .userPw("1234")
+            .build();
     }
 
     @Test
@@ -65,8 +74,8 @@ class MemberControllerTest {
 
         mockMvc.perform(post("/members/auth/signup")
                 .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(signUpRequest))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(signUpRequest))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(200))
             .andExpect(jsonPath("$.data").exists())
@@ -235,9 +244,9 @@ class MemberControllerTest {
     void verifyCode() throws Exception {
 
         mockMvc.perform(post("/members/auth/email")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(verifyCodeRequest)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyCodeRequest)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(200))
             .andExpect(jsonPath("$.message").value("성공"))
@@ -318,6 +327,68 @@ class MemberControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400))
             .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("로그인")
+    @WithMockUser(username = "test")
+    void login() throws Exception {
+
+        MemberSignInDto.Response response = MemberSignInDto.Response.builder()
+            .userId("test")
+            .role(List.of(Role.ROLE_USER.getName()))
+            .build();
+
+        when(memberService.login(any())).thenReturn(response);
+        when(tokenProvider.generateAccessToken(any(), any())).thenReturn("jfdklsagjdl;safjkl");
+
+        mockMvc.perform(post("/members/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signInRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 아이디 입력 x")
+    @WithMockUser(username = "test")
+    void loginFail1() throws Exception {
+
+        MemberSignInDto.Request badRequest = signInRequest.toBuilder()
+            .userId("")
+            .build();
+
+        mockMvc.perform(post("/members/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 비밀번호 입력 x")
+    @WithMockUser(username = "test")
+    void loginFail2() throws Exception {
+
+        MemberSignInDto.Request badRequest = signInRequest.toBuilder()
+            .userPw("")
+            .build();
+
+        mockMvc.perform(post("/members/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
             .andDo(print());
     }
 }
