@@ -6,6 +6,7 @@ import com.jh.movieticket.config.GlobalApiResponse;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -174,5 +176,21 @@ public class MemberController {
         memberService.deleteMember(userId);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+    }
+
+    /**
+     * 회원 조회
+     *
+     * @param userId 조회할 회원 아이디
+     * @return 조회한 회원 정보
+     */
+    @GetMapping("/member/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<GlobalApiResponse<MemberVerifyDto.Response>> verify(
+        @NotBlank(message = "아이디를 입력해주세요.") @PathVariable String userId) {
+
+        MemberVerifyDto.Response verifiedMember = memberService.verifyMember(userId);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(verifiedMember));
     }
 }
