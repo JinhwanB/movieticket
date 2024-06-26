@@ -406,4 +406,30 @@ class MemberControllerTest {
             .andExpect(jsonPath("$.data").doesNotExist())
             .andDo(print());
     }
+
+    @Test
+    @DisplayName("토큰 재발급")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void reGetToken() throws Exception {
+
+        when(tokenProvider.reGenerateAccessToken(any(), any())).thenReturn("jfdasklgjeiofjdslkgjfa");
+
+        mockMvc.perform(post("/members/token"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 실패 - 로그인 x")
+    void reGetTokenFail() throws Exception {
+
+        mockMvc.perform(post("/members/token"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
 }
