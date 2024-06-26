@@ -70,6 +70,16 @@ public class TokenProvider {
         return generateAccessToken(userName, userRole); // 새로운 accessToken 발급
     }
 
+    // 로그아웃
+    // access 토큰은 클라이언트에서 제거한다는 가정(서버에서 관리하지 않는다.)
+    // refresh 토큰을 쿠키에서 지운다.
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+
+        String refreshToken = getRefreshTokenFromCookie(request);
+        deleteRefreshToken(refreshToken, response);
+    }
+
+
     // jwt를 사용하여 사용자의 인증 정보 가져오는 메소드
     @Transactional
     public Authentication getAuthentication(String jwt) {
@@ -152,6 +162,18 @@ public class TokenProvider {
         cookie.setSecure(true); // https 설정 (https 외에 통신 불가)
         cookie.setPath("/"); // 모든 곳에서 쿠키 열람 가능
         cookie.setMaxAge(86400); // 24시간
+
+        response.addCookie(cookie);
+    }
+
+    // refresh 토큰 쿠키에서 삭제
+    private void deleteRefreshToken(String refreshToken, HttpServletResponse response){
+
+        Cookie cookie = new Cookie(COOKIE_NAME, refreshToken);
+
+        // 쿠키 속성 설정
+        cookie.setPath("/"); // 모든 곳에서 쿠키 열람 가능
+        cookie.setMaxAge(0); // 삭제
 
         response.addCookie(cookie);
     }
