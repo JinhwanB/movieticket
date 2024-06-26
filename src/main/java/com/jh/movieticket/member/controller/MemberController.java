@@ -3,6 +3,7 @@ package com.jh.movieticket.member.controller;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.config.GlobalApiResponse;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
+import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -36,6 +37,21 @@ public class MemberController {
         @NotBlank(message = "이메일을 입력해주세요.") @Pattern(regexp = "^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", message = "올바른 이메일을 입력해주세요.") @PathVariable String email) {
 
         memberService.sendCode(email);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+    }
+
+    /**
+     * 인증코드 확인
+     *
+     * @param request 인증코드 받은 이메일과 입력한 인증코드
+     * @return 인증코드 매칭 여부
+     */
+    @PostMapping("/auth/email")
+    public ResponseEntity<GlobalApiResponse<?>> verifyEmailCode(
+        @Valid @RequestBody VerifyCodeDto.Request request) {
+
+        memberService.verifyCode(request);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
     }
