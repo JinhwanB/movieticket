@@ -11,10 +11,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 @DataJpaTest
 @Import(JpaAuditingConfig.class)
 class MemberRepositoryTest {
+
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "registerDate"));
 
     @Autowired
     MemberRepository memberRepository;
@@ -61,5 +68,14 @@ class MemberRepositoryTest {
     void duplicatedEmail(){
 
         assertThat(memberRepository.existsByEmailAndDeleteDate("test@naver.com", null)).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("전체 회원 리스트 조회")
+    void memberList(){
+
+        Page<Member> members = memberRepository.findAllByDeleteDate(null, pageable);
+
+        assertThat(members.getNumberOfElements()).isEqualTo(2);
     }
 }
