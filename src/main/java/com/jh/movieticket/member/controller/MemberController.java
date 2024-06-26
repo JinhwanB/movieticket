@@ -2,12 +2,15 @@ package com.jh.movieticket.member.controller;
 
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.config.GlobalApiResponse;
+import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -71,17 +74,24 @@ public class MemberController {
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(userId));
     }
 
-//    @PostMapping("/auth/login")
-//    public ResponseEntity<GlobalApiResponse<String>> login(@Valid @RequestBody MemberSignInDto.Request request, HttpServletResponse response){
-//
-//        MemberSignInDto.Response signInDto = memberService.login(request);
-//        String userId = signInDto.getUserId();
-//        List<String> role = signInDto.getRole();
-//
-//        String accessToken = tokenProvider.generateAccessToken(userId, role);
-//        String refreshToken = tokenProvider.generateRefreshToken(userId);
-//        tokenToCookie(refreshToken, response);
-//
-//        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(accessToken));
-//    }
+    /**
+     * 로그인
+     *
+     * @param request  아이디와 비밀번호
+     * @param response HttpServletResponse
+     * @return 로그인 성공 -> 200코드와 access 토큰, 실패 -> 에러코드와 에러메시지
+     */
+    @PostMapping("/auth/login")
+    public ResponseEntity<GlobalApiResponse<String>> login(
+        @Valid @RequestBody MemberSignInDto.Request request, HttpServletResponse response) {
+
+        MemberSignInDto.Response signInDto = memberService.login(request);
+        String userId = signInDto.getUserId();
+        List<String> role = signInDto.getRole();
+
+        String accessToken = tokenProvider.generateAccessToken(userId, role);
+        tokenProvider.generateRefreshToken(userId, role, response);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(accessToken));
+    }
 }
