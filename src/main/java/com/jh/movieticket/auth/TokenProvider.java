@@ -151,6 +151,7 @@ public class TokenProvider {
         cookie.setHttpOnly(true); // httpOnly 설정(js 접근 불가)
         cookie.setSecure(true); // https 설정 (https 외에 통신 불가)
         cookie.setPath("/"); // 모든 곳에서 쿠키 열람 가능
+        cookie.setMaxAge(86400); // 24시간
 
         response.addCookie(cookie);
     }
