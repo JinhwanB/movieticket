@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -157,5 +158,21 @@ public class MemberController {
         MemberModifyDto.Response modifiedMember = memberService.modifyMember(userId, request);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(modifiedMember));
+    }
+
+    /**
+     * 회원 탈퇴
+     *
+     * @param userId 탈퇴할 회원 아이디
+     * @return 탈퇴 성공 시 -> 200코드와 성공메시지, 실패 시 -> 에러코드와 에러메시지
+     */
+    @DeleteMapping("/member/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<GlobalApiResponse<?>> delete(
+        @NotBlank(message = "아이디를 입력해주세요.") @PathVariable String userId) {
+
+        memberService.deleteMember(userId);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
     }
 }
