@@ -3,6 +3,7 @@ package com.jh.movieticket.member.controller;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.config.GlobalApiResponse;
+import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -136,5 +138,23 @@ public class MemberController {
         String accessToken = tokenProvider.reGenerateAccessToken(request, response);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(accessToken));
+    }
+
+    /**
+     * 회원 정보 수정
+     *
+     * @param userId  수정할 회원 아이디
+     * @param request 수정할 정보
+     * @return 수정된 정보
+     */
+    @PostMapping("/member")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<GlobalApiResponse<MemberModifyDto.Response>> modify(
+        @NotBlank(message = "아이디를 입력해주세요.") @RequestParam String userId,
+        @Valid @RequestBody MemberModifyDto.Request request) {
+
+        MemberModifyDto.Response modifiedMember = memberService.modifyMember(userId, request);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(modifiedMember));
     }
 }
