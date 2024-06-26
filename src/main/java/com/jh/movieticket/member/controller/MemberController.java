@@ -5,8 +5,12 @@ import com.jh.movieticket.config.GlobalApiResponse;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.service.MemberService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,10 +19,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
+@Validated
 public class MemberController {
 
     private final MemberService memberService;
     private final TokenProvider tokenProvider;
+
+    /**
+     * 인증코드 메일 발송
+     *
+     * @param email 메일 받을 이메일
+     * @return 메일 전송 여부
+     */
+    @PostMapping("/auth/{email}")
+    public ResponseEntity<GlobalApiResponse<?>> sendEmailCode(
+        @NotBlank(message = "이메일을 입력해주세요.") @Pattern(regexp = "^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", message = "올바른 이메일을 입력해주세요.") @PathVariable String email) {
+
+        memberService.sendCode(email);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+    }
 
     /**
      * 회원가입
