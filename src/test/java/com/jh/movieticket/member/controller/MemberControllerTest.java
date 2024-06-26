@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -529,6 +530,48 @@ class MemberControllerTest {
         mockMvc.perform(put("/members/member?userId=" + userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void deleteUser() throws Exception {
+
+        String userId = "test";
+
+        mockMvc.perform(delete("/members/member/" + userId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 탈퇴할 아이디 작성 x")
+    @WithMockUser(username = "test", roles = {"USER", "ADMIN"})
+    void deleteUserFail1() throws Exception {
+
+        String userId = " ";
+
+        mockMvc.perform(delete("/members/member/" + userId))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 로그인 x")
+    void deleteUserFail2() throws Exception {
+
+        String userId = "test";
+
+        mockMvc.perform(delete("/members/member/" + userId))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.data").doesNotExist())
