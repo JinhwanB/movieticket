@@ -175,4 +175,50 @@ class MemberControllerTest {
             .andExpect(jsonPath("$[0].data").doesNotExist())
             .andDo(print());
     }
+
+    @Test
+    @DisplayName("인증코드 메일 발송")
+    @WithMockUser(username = "test")
+    void sendEmail() throws Exception {
+
+        String email = "test@naver.com";
+
+        mockMvc.perform(post("/members/auth/" + email)
+                .with(csrf()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 메일 발송 실패 - 이메일 작성 x")
+    @WithMockUser(username = "test")
+    void sendEmailFail1() throws Exception {
+
+        String email = null;
+
+        mockMvc.perform(post("/members/auth/" + email)
+                .with(csrf()))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 메일 발송 실패 - 잘못된 이메일 작성 x")
+    @WithMockUser(username = "test")
+    void sendEmailFail2() throws Exception {
+
+        String email = "test";
+
+        mockMvc.perform(post("/members/auth/" + email)
+                .with(csrf()))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
 }
