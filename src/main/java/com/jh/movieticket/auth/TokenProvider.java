@@ -9,6 +9,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class TokenProvider {
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 24 * 1000 * 60 * 60; // 24hour
     private static final String TOKEN_HEADER = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
+    private static final String COOKIE_NAME = "refreshToken";
 
     private final MemberService memberService;
 
@@ -51,6 +53,21 @@ public class TokenProvider {
         tokenToCookie(refreshToken, response);
     }
 
+    // refreshToken 재발급
+    public String reGenerateAccessToken(HttpServletRequest request, HttpServletResponse response){
+
+        String refreshToken = getRefreshTokenFromCookie(request);
+
+        if(!validateToken(refreshToken)){ // 리프레시 토큰이 만료된 경우
+            throw new TokenException(TokenErrorCode.EXPIRED_REFRESH_TOKEN);
+        }
+
+        String userName = getUserName(refreshToken);
+        List<String> userRole = getUserRole(refreshToken);
+
+        generateRefreshToken(userName, userRole, response); // 새로운 refreshToken을 쿠키에 저장
+
+        return generateAccessToken(userName, userRole); // 새로운 accessToken 발급
     }
 
     // jwt를 사용하여 사용자의 인증 정보 가져오는 메소드
@@ -128,8 +145,7 @@ public class TokenProvider {
     // 토큰을 쿠키에 저장
     private void tokenToCookie(String refreshToken, HttpServletResponse response){
 
-        String cookieName = "refreshToken";
-        Cookie cookie = new Cookie(cookieName, refreshToken);
+        Cookie cookie = new Cookie(COOKIE_NAME, refreshToken);
 
         // 쿠키 속성 설정
         cookie.setHttpOnly(true); // httpOnly 설정(js 접근 불가)
@@ -137,5 +153,20 @@ public class TokenProvider {
         cookie.setPath("/"); // 모든 곳에서 쿠키 열람 가능
 
         response.addCookie(cookie);
+    }
+
+    // 쿠키에 저장된 리프레시 토큰 가져오기
+    private String getRefreshTokenFromCookie(HttpServletRequest request){
+
+        Cookie cookie = Arrays.stream(request.getCookies())
+            .filter(c -> c.getName().equals(COOKIE_NAME))
+            .findAny()
+            .orElse(null);
+
+        if(cookie == null){
+            throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
+        }
+
+        return cookie.getValue();
     }
 }
