@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.movieticket.auth.TokenProvider;
+import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class MemberControllerTest {
 
     String signUpRequest;
+    VerifyCodeDto.Request verifyCodeRequest;
 
     @Autowired
     MockMvc mockMvc;
@@ -47,6 +49,11 @@ class MemberControllerTest {
             + "    \"email\":\"test@naver.com\",\n"
             + "    \"role\":\"user\"\n"
             + "}";
+
+        verifyCodeRequest = VerifyCodeDto.Request.builder()
+            .email("test@naver.com")
+            .code("1234")
+            .build();
     }
 
     @Test
@@ -219,6 +226,98 @@ class MemberControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400))
             .andExpect(jsonPath("$[0].data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 확인")
+    @WithMockUser(username = "test")
+    void verifyCode() throws Exception {
+
+        mockMvc.perform(post("/members/auth/email")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(verifyCodeRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("성공"))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 확인 실패 - 이메일 입력 x")
+    @WithMockUser(username = "test")
+    void verifyCodeFail1() throws Exception {
+
+        VerifyCodeDto.Request badRequest = verifyCodeRequest.toBuilder()
+            .email("")
+            .build();
+
+        mockMvc.perform(post("/members/auth/email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 확인 실패 - 잘못된 이메일 입력")
+    @WithMockUser(username = "test")
+    void verifyCodeFail2() throws Exception {
+
+        VerifyCodeDto.Request badRequest = verifyCodeRequest.toBuilder()
+            .email("test")
+            .build();
+
+        mockMvc.perform(post("/members/auth/email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 확인 실패 - 인증코드 입력 x")
+    @WithMockUser(username = "test")
+    void verifyCodeFail3() throws Exception {
+
+        VerifyCodeDto.Request badRequest = verifyCodeRequest.toBuilder()
+            .code("")
+            .build();
+
+        mockMvc.perform(post("/members/auth/email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("인증코드 확인 실패 - 잘못된 인증코드 입력")
+    @WithMockUser(username = "test")
+    void verifyCodeFail4() throws Exception {
+
+        VerifyCodeDto.Request badRequest = verifyCodeRequest.toBuilder()
+            .code("12345")
+            .build();
+
+        mockMvc.perform(post("/members/auth/email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andExpect(jsonPath("$.data").doesNotExist())
             .andDo(print());
     }
 }
