@@ -1,6 +1,9 @@
 package com.jh.movieticket.member.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
+import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberSignInDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,18 +12,23 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-public class Member extends BaseTimeEntity {
+public class Member extends BaseTimeEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,4 +49,66 @@ public class Member extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제날짜
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(() -> role.name());
+
+        return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+
+        return userPW;
+    }
+
+    @Override
+    public String getUsername() {
+
+        return userId;
+    }
+
+    /**
+     * Entity -> LoginResponse
+     *
+     * @return LoginResponse
+     */
+    public MemberSignInDto.Response toLoginResponse() {
+
+        return MemberSignInDto.Response.builder()
+            .userId(userId)
+            .role(List.of(role.getName()))
+            .build();
+    }
+
+    /**
+     * Entity -> VerifyResponse
+     *
+     * @return VerifyResponse
+     */
+    public MemberVerifyDto.Response toVerifyResponse() {
+
+        return MemberVerifyDto.Response.builder()
+            .userId(userId)
+            .userPw(userPW)
+            .email(email)
+            .build();
+    }
+
+    /**
+     * Entity -> ModifyResponse
+     *
+     * @return ModifyResponse
+     */
+    public MemberModifyDto.Response toModifyResponse() {
+
+        return MemberModifyDto.Response.builder()
+            .userId(userId)
+            .userPw(userPW)
+            .email(email)
+            .build();
+    }
 }
