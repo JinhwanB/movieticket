@@ -1,5 +1,6 @@
 package com.jh.movieticket.config;
 
+import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.mail.exception.MailException;
 import com.jh.movieticket.member.exception.MemberException;
 import jakarta.validation.ConstraintViolation;
@@ -102,5 +103,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(e.getMailErrorCode().getStatus(),
                 e.getMailErrorCode().getMessage()));
+    }
+
+    // 토큰 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(TokenException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleTokenException(TokenException e){
+
+        log.error("토큰 관련 exception = {}", e.getTokenErrorCode().getMessage());
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(e.getTokenErrorCode().getStatus(), e.getTokenErrorCode().getMessage()));
     }
 }
