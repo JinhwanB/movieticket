@@ -31,7 +31,7 @@ class TokenProviderTest {
     MemberService memberService;
 
     @BeforeEach
-    void before() throws NoSuchFieldException, NoSuchMethodException {
+    void before() throws NoSuchFieldException {
 
         tokenProvider = new TokenProvider(memberService);
 
@@ -100,5 +100,32 @@ class TokenProviderTest {
 
         assertThatThrownBy(() -> tokenProvider.reGenerateAccessToken(request, response)).isInstanceOf(
             TokenException.class);
+    }
+
+    @Test
+    @DisplayName("로그아웃")
+    void logout() {
+
+        String userName = "test";
+        List<String> roles = List.of("USER");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        tokenProvider.generateRefreshToken(userName, roles, response);
+
+        request.setCookies(response.getCookies());
+        tokenProvider.logout(request, response);
+
+        assertThat(response.getCookies()[0].getMaxAge()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 - 쿠키 없음")
+    void logoutFail() {
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        assertThatThrownBy(() -> tokenProvider.logout(request, response)).isInstanceOf(TokenException.class);
     }
 }
