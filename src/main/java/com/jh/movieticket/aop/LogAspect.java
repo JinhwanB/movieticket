@@ -1,6 +1,5 @@
 package com.jh.movieticket.aop;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -17,17 +16,20 @@ import org.springframework.stereotype.Component;
 public class LogAspect {
 
     // 모든 메소드 포인트컷
-    @Pointcut("execution(* com.jh.movieticket..*(..)) " + "&& !execution(* com.jh.movieticket.auth..*(..)) " + "&& !execution(* com.jh.movieticket.config..*(..)) " + "&& !execution(* com.jh.movieticket.validation..*(..))")
+    @Pointcut("execution(* com.jh.movieticket..*(..)) "
+        + "&& !execution(* com.jh.movieticket.auth..*(..)) "
+        + "&& !execution(* com.jh.movieticket.config..*(..)) "
+        + "&& !execution(* com.jh.movieticket.validation..*(..))")
     public void all() {
     }
 
     // Controller클래스의 모든 메소드 포인트컷
-    @Pointcut("execution(* com.jh.movieticket.*Controller..*(..))")
+    @Pointcut("execution(* com.jh.movieticket..*Controller.*(..))")
     public void controller() {
     }
 
     // Service클래스의 모든 메소드 포인트컷
-    @Pointcut("execution(* com.jh.movieticket.*Service..*(..))")
+    @Pointcut("execution(* com.jh.movieticket..*Service.*(..))")
     public void service() {
     }
 
@@ -42,25 +44,8 @@ public class LogAspect {
         Object[] args = joinPoint.getArgs();
         for (Object arg : args) {
             if (arg != null) {
-                if (arg.getClass().getPackage().getName().startsWith("com.jh.restaurantreservationpj")) {
-                    log.info("파라미터 타입 = {}", arg.getClass().getName());
-
-                    // 객체 파라미터 필드 값 로그 출력
-                    Field[] fields = arg.getClass().getDeclaredFields();
-                    for (Field field : fields) {
-                        field.setAccessible(true);  // private 필드 접근 허용
-                        try {
-                            Object fieldValue = field.get(arg);
-                            log.info("필드 이름 = {} -> {}", field.getName(), fieldValue);
-                        } catch (IllegalAccessException e) {
-                            log.error("필드 값을 가져올 수 없음", e);
-                        }
-                    }
-
-                    continue;
-                }
-
-                log.info("파라미터 타입 = {} -> {}", arg.getClass().getSimpleName(), arg);
+                log.info("type = {}", arg.getClass().getSimpleName());
+                log.info("value = {}", arg);
             }
         }
     }
