@@ -7,13 +7,11 @@ import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
-import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +19,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -89,7 +86,7 @@ public class MemberService implements UserDetailsService {
      * @param request 회원 아이디, 비밀번호, 이메일, 권한
      * @return 회원가입한 아이디
      */
-    public String register(MemberSignUpDto.Request request) {
+    public Member register(MemberSignUpDto.Request request) {
 
         String userId = request.getUserId();
         String userPw = request.getUserPw();
@@ -112,9 +109,7 @@ public class MemberService implements UserDetailsService {
             .email(email)
             .role(role)
             .build();
-        memberRepository.save(member);
-
-        return userId;
+        return memberRepository.save(member);
     }
 
     /**
@@ -123,7 +118,7 @@ public class MemberService implements UserDetailsService {
      * @param request 아이디와 비밀번호
      * @return 아이디와 권한
      */
-    public MemberSignInDto.Response login(MemberSignInDto.Request request) {
+    public Member login(MemberSignInDto.Request request) {
 
         String userId = request.getUserId();
         String userPw = request.getUserPw();
@@ -135,7 +130,7 @@ public class MemberService implements UserDetailsService {
             throw new MemberException(MemberErrorCode.NOT_MATCH_PASSWORD);
         }
 
-        return member.toLoginResponse();
+        return member;
     }
 
     /**
@@ -146,7 +141,7 @@ public class MemberService implements UserDetailsService {
      * @return 수정된 정보
      */
     @CachePut(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
-    public MemberModifyDto.Response modifyMember(String userId, MemberModifyDto.Request request) {
+    public Member modifyMember(String userId, MemberModifyDto.Request request) {
 
         Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
@@ -166,9 +161,7 @@ public class MemberService implements UserDetailsService {
             .userPW(encodedPw)
             .email(modifiedEmail)
             .build();
-        memberRepository.save(modifiedMember);
-
-        return modifiedMember.toModifyResponse();
+        return memberRepository.save(modifiedMember);
     }
 
     /**
@@ -197,12 +190,10 @@ public class MemberService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     @Cacheable(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
-    public MemberVerifyDto.Response verifyMember(String userId) {
+    public Member verifyMember(String userId) {
 
-        Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
+        return memberRepository.findByUserIdAndDeleteDate(userId, null)
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
-
-        return member.toVerifyResponse();
     }
 
     /**
@@ -212,14 +203,9 @@ public class MemberService implements UserDetailsService {
      * @return 페이징된 전체 회원 리스트
      */
     @Transactional(readOnly = true)
-    public Page<MemberVerifyDto.Response> allMembers(Pageable pageable) {
+    public Page<Member> allMembers(Pageable pageable) {
 
-        Page<Member> memberList = memberRepository.findAllByDeleteDate(null, pageable);
-        List<MemberVerifyDto.Response> responseList = memberList.getContent().stream()
-            .map(Member::toVerifyResponse)
-            .toList();
-
-        return new PageImpl<>(responseList, pageable, responseList.size());
+        return memberRepository.findAllByDeleteDate(null, pageable);
     }
 
     /**

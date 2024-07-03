@@ -3,10 +3,12 @@ package com.jh.movieticket.member.controller;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.config.GlobalApiResponse;
+import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.MemberVerifyDto;
+import com.jh.movieticket.member.dto.MemberVerifyDto.Response;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
@@ -19,6 +21,7 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -85,9 +88,10 @@ public class MemberController {
     public ResponseEntity<GlobalApiResponse<String>> signUp(
         @Valid @RequestBody MemberSignUpDto.Request request) {
 
-        String userId = memberService.register(request);
+        Member member = memberService.register(request);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED ,userId));
+        return ResponseEntity.ok(
+            GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, member.getUserId()));
     }
 
     /**
@@ -101,9 +105,9 @@ public class MemberController {
     public ResponseEntity<GlobalApiResponse<String>> login(
         @Valid @RequestBody MemberSignInDto.Request request, HttpServletResponse response) {
 
-        MemberSignInDto.Response signInDto = memberService.login(request);
-        String userId = signInDto.getUserId();
-        List<String> role = signInDto.getRole();
+        Member member = memberService.login(request);
+        String userId = member.getUserId();
+        List<String> role = List.of(member.getRole().getName());
 
         String accessToken = tokenProvider.generateAccessToken(userId, role);
         tokenProvider.generateRefreshToken(userId, role, response);
@@ -162,9 +166,10 @@ public class MemberController {
         @NotBlank(message = "아이디를 입력해주세요.") @RequestParam String userId,
         @Valid @RequestBody MemberModifyDto.Request request) {
 
-        MemberModifyDto.Response modifiedMember = memberService.modifyMember(userId, request);
+        Member member = memberService.modifyMember(userId, request);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, modifiedMember));
+        return ResponseEntity.ok(
+            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, member.toModifyResponse()));
     }
 
     /**
@@ -194,9 +199,10 @@ public class MemberController {
     public ResponseEntity<GlobalApiResponse<MemberVerifyDto.Response>> verify(
         @NotBlank(message = "아이디를 입력해주세요.") @PathVariable String userId) {
 
-        MemberVerifyDto.Response verifiedMember = memberService.verifyMember(userId);
+        Member member = memberService.verifyMember(userId);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, verifiedMember));
+        return ResponseEntity.ok(
+            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, member.toVerifyResponse()));
     }
 
     /**
@@ -211,8 +217,13 @@ public class MemberController {
         @PageableDefault(sort = "registerDate", direction = Direction.ASC)
         Pageable pageable) {
 
-        Page<MemberVerifyDto.Response> allMembers = memberService.allMembers(pageable);
+        Page<Member> members = memberService.allMembers(pageable);
+        List<Response> contentList = members.getContent().stream()
+            .map(Member::toVerifyResponse)
+            .toList();
+        Page<MemberVerifyDto.Response> result = new PageImpl<>(contentList, pageable,
+            contentList.size());
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, allMembers));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, result));
     }
 }

@@ -14,9 +14,7 @@ import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
-import com.jh.movieticket.member.dto.MemberSignInDto.Response;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
-import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
@@ -49,6 +47,7 @@ class MemberServiceTest {
     MemberSignInDto.Request signInRequest;
     MemberModifyDto.Request modifyRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "registerDate"));
+    Member member;
 
     @MockBean
     MemberRepository memberRepository;
@@ -92,6 +91,13 @@ class MemberServiceTest {
         modifyRequest = MemberModifyDto.Request.builder()
             .userPw("2345")
             .email("test@gmail.com")
+            .build();
+
+        member = Member.builder()
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .role(Role.ROLE_USER)
             .build();
     }
 
@@ -156,10 +162,11 @@ class MemberServiceTest {
 
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
+        when(memberRepository.save(any())).thenReturn(member);
 
-        String memberId = memberService.register(signUpRequest);
+        Member registered = memberService.register(signUpRequest);
 
-        assertThat(memberId).isEqualTo(signUpRequest.getUserId());
+        assertThat(registered.getUserId()).isEqualTo(signUpRequest.getUserId());
     }
 
     @Test
@@ -199,9 +206,9 @@ class MemberServiceTest {
             Optional.of(member));
         when(passwordEncoder.matches(any(), any())).thenReturn(true);
 
-        Response signInResponse = memberService.login(signInRequest);
+        Member signInMember = memberService.login(signInRequest);
 
-        assertThat(signInResponse.getUserId()).isEqualTo("test");
+        assertThat(signInMember.getUserId()).isEqualTo("test");
     }
 
     @Test
@@ -249,7 +256,7 @@ class MemberServiceTest {
         when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
             Optional.of(member));
 
-        MemberVerifyDto.Response verifiedMember = memberService.verifyMember("test");
+        Member verifiedMember = memberService.verifyMember("test");
 
         assertThat(verifiedMember.getUserId()).isEqualTo("test");
     }
@@ -268,22 +275,20 @@ class MemberServiceTest {
     @DisplayName("회원 정보 수정")
     void modifyMember() {
 
-        Member member = Member.builder()
-            .id(1L)
-            .userId("test")
-            .userPW("1234")
-            .email("test@naver.com")
-            .role(Role.ROLE_USER)
+        Member modified = member.toBuilder()
+            .userPW(modifyRequest.getUserPw())
+            .email(modifyRequest.getEmail())
             .build();
 
         when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
             Optional.of(member));
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
+        when(memberRepository.save(any())).thenReturn(modified);
 
-        MemberModifyDto.Response modifyMember = memberService.modifyMember("test", modifyRequest);
+        Member modifiedMember = memberService.modifyMember("test", modifyRequest);
 
-        assertThat(modifyMember.getEmail()).isEqualTo(modifyRequest.getEmail());
+        assertThat(modifiedMember.getEmail()).isEqualTo(modifyRequest.getEmail());
     }
 
     @Test
@@ -352,7 +357,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("회원 전체 리스트 조회")
-    void memberList(){
+    void memberList() {
 
         Member member = Member.builder()
             .userId("test")
@@ -365,9 +370,9 @@ class MemberServiceTest {
 
         when(memberRepository.findAllByDeleteDate(any(), any())).thenReturn(memberList);
 
-        Page<MemberVerifyDto.Response> responses = memberService.allMembers(pageable);
+        Page<Member> allMembers = memberService.allMembers(pageable);
 
-        assertThat(responses.getNumberOfElements()).isEqualTo(1);
-        assertThat(responses.getContent().get(0).getUserId()).isEqualTo("test");
+        assertThat(allMembers.getNumberOfElements()).isEqualTo(1);
+        assertThat(allMembers.getContent().get(0).getUserId()).isEqualTo("test");
     }
 }

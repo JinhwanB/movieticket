@@ -2,7 +2,6 @@ package com.jh.movieticket.member.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.member.dto.MemberModifyDto;
-import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberVerifyDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +13,6 @@ import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,19 +67,6 @@ public class Member extends BaseTimeEntity implements UserDetails {
     public String getUsername() {
 
         return userId;
-    }
-
-    /**
-     * Entity -> LoginResponse
-     *
-     * @return LoginResponse
-     */
-    public MemberSignInDto.Response toLoginResponse() {
-
-        return MemberSignInDto.Response.builder()
-            .userId(userId)
-            .role(List.of(role.getName()))
-            .build();
     }
 
     /**

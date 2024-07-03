@@ -16,11 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.movieticket.auth.SecurityConfiguration;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
+import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
-import com.jh.movieticket.member.dto.MemberVerifyDto;
-import com.jh.movieticket.member.dto.MemberVerifyDto.Response;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
 import java.util.List;
@@ -51,6 +50,7 @@ class MemberControllerTest {
     MemberModifyDto.Request modifyRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "registerDate"));
     MockMvc mockMvc;
+    Member member;
 
     @Autowired
     WebApplicationContext context;
@@ -93,19 +93,26 @@ class MemberControllerTest {
             .userPw("12345")
             .email("test@gmail.com")
             .build();
+
+        member = Member.builder()
+            .userId("test")
+            .userPW("1234")
+            .email("test@naver.com")
+            .role(Role.ROLE_USER)
+            .build();
     }
 
     @Test
     @DisplayName("회원가입")
     void signUp() throws Exception {
 
-        when(memberService.register(any())).thenReturn("test");
+        when(memberService.register(any())).thenReturn(member);
 
         mockMvc.perform(post("/members/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(signUpRequest))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.status").value(201))
             .andExpect(jsonPath("$.data").exists())
             .andDo(print());
     }
@@ -336,12 +343,7 @@ class MemberControllerTest {
     @DisplayName("로그인")
     void login() throws Exception {
 
-        MemberSignInDto.Response response = MemberSignInDto.Response.builder()
-            .userId("test")
-            .role(List.of(Role.ROLE_USER.getName()))
-            .build();
-
-        when(memberService.login(any())).thenReturn(response);
+        when(memberService.login(any())).thenReturn(member);
         when(tokenProvider.generateAccessToken(any(), any())).thenReturn("jfdklsagjdl;safjkl");
 
         mockMvc.perform(post("/members/auth/login")
@@ -459,10 +461,8 @@ class MemberControllerTest {
     void modify() throws Exception {
 
         String userId = "test";
-        MemberModifyDto.Response modifiedMember = MemberModifyDto.Response.builder()
-            .userId(userId)
-            .userPw(modifyRequest.getUserPw())
-            .email(modifyRequest.getEmail())
+        Member modifiedMember = member.toBuilder()
+            .userId("ttt")
             .build();
 
         when(memberService.modifyMember(any(), any())).thenReturn(modifiedMember);
@@ -555,7 +555,7 @@ class MemberControllerTest {
 
         mockMvc.perform(delete("/members/member/" + userId))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.status").value(204))
             .andExpect(jsonPath("$.message").value("성공"))
             .andExpect(jsonPath("$.data").doesNotExist())
             .andDo(print());
@@ -595,11 +595,13 @@ class MemberControllerTest {
 
         String userId = "test";
 
+        when(memberService.verifyMember(any())).thenReturn(member);
+
         mockMvc.perform(get("/members/member/" + userId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(200))
             .andExpect(jsonPath("$.message").value("성공"))
-            .andExpect(jsonPath("$.data").doesNotExist())
+            .andExpect(jsonPath("$.data").exists())
             .andDo(print());
     }
 
@@ -635,18 +637,13 @@ class MemberControllerTest {
     @WithMockUser(username = "admin", roles = "ADMIN")
     void all() throws Exception {
 
-        Response member = Response.builder()
-            .userId("test")
-            .userPw("1234")
-            .email("test@naver.com")
-            .build();
-        Response admin = Response.builder()
+        Member admin = Member.builder()
             .userId("admin")
-            .userPw("12345")
+            .userPW("12345")
             .email("admin@gmail.com")
             .build();
-        List<MemberVerifyDto.Response> members = List.of(member, admin);
-        Page<MemberVerifyDto.Response> memberList = new PageImpl<>(members, pageable, members.size());
+        List<Member> members = List.of(member, admin);
+        Page<Member> memberList = new PageImpl<>(members, pageable, members.size());
 
         when(memberService.allMembers(any())).thenReturn(memberList);
 
