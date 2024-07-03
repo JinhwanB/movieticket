@@ -33,7 +33,9 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final String IS_EMAIL_AUTH = ":isAuth";
 
     /**
      * 인증코드를 생성하여 이메일로 보낸다. 인증코드를 redis 에 저장하여 후에 인증코드를 알맞게 작성했는지 확인한다.
@@ -51,6 +53,7 @@ public class MemberService {
         String text = "인증코드 : " + code;
         mailService.sendEmail(email, title, text);
         redisTemplate.opsForValue().set(email, code); // redisTemplate 에 저장
+        redisTemplate.opsForValue().set(email + IS_EMAIL_AUTH, false); // 인증 진행 여부
     }
 
     /**
@@ -62,12 +65,13 @@ public class MemberService {
 
         String email = request.getEmail();
         String code = request.getCode();
-        String originalCode = redisTemplate.opsForValue().get(email);
+        String originalCode = (String) redisTemplate.opsForValue().get(email);
         if (!code.equals(originalCode)) { // 인증 코드를 올바르지 않게 작성한 경우
             throw new MemberException(MemberErrorCode.NOT_MATCH_CODE);
         }
 
-        redisTemplate.delete(email); // redis 에서 제거
+        redisTemplate.delete(email); // 인증코드 삭제
+        redisTemplate.opsForValue().set(email + IS_EMAIL_AUTH, true); // 인증 여부 변경
     }
 
     /**
@@ -83,6 +87,12 @@ public class MemberService {
         String email = request.getEmail();
         Role role = request.getRole();
 
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(email + IS_EMAIL_AUTH))
+            || Boolean.FALSE.equals(
+            redisTemplate.opsForValue().get(email + IS_EMAIL_AUTH))) { // 이메일 인증을 진행하지 않은 경우
+            throw new MemberException(MemberErrorCode.NOT_AUTH_OF_MAIL);
+        }
+
         if (memberRepository.existsByUserIdAndDeleteDate(userId, null)) { // 중복된 아이디인 경우
             throw new MemberException(MemberErrorCode.EXIST_USER_ID);
         }
@@ -92,6 +102,7 @@ public class MemberService {
         }
 
         String encodedPw = passwordEncoder.encode(userPw); // 비밀번호 암호화
+        redisTemplate.delete(email + IS_EMAIL_AUTH); // 모든 예외 상황 통과하면 인증 진행 여부 삭제
 
         Member member = Member.builder()
             .userId(userId)
@@ -139,10 +150,19 @@ public class MemberService {
         String modifiedPw = request.getUserPw();
         String modifiedEmail = request.getEmail();
 
-        // 기존의 이메일과 다르고 중복되는 이메일인 경우
-        if (!modifiedEmail.equals(member.getEmail()) && memberRepository.existsByEmailAndDeleteDate(
-            modifiedEmail, null)) {
-            throw new MemberException(MemberErrorCode.EXIST_EMAIL);
+        // 기존의 이메일과 다른 경우
+        if (!modifiedEmail.equals(member.getEmail())) {
+            // 인증을 진행하지 않은 경우
+            if (Boolean.FALSE.equals(redisTemplate.hasKey(modifiedEmail + IS_EMAIL_AUTH))
+                || Boolean.FALSE.equals(
+                redisTemplate.opsForValue().get(modifiedEmail + IS_EMAIL_AUTH))) {
+                throw new MemberException(MemberErrorCode.NOT_AUTH_OF_MAIL);
+            }
+
+            if (memberRepository.existsByEmailAndDeleteDate( // 중복 이메일인 경우
+                modifiedEmail, null)) {
+                throw new MemberException(MemberErrorCode.EXIST_EMAIL);
+            }
         }
 
         String encodedPw = passwordEncoder.encode(modifiedPw);
