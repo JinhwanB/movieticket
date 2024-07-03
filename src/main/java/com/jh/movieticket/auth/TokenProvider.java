@@ -1,6 +1,6 @@
 package com.jh.movieticket.auth;
 
-import com.jh.movieticket.member.service.MemberService;
+import com.jh.movieticket.member.service.MemberDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
@@ -35,7 +35,7 @@ public class TokenProvider {
     private static final String TOKEN_PREFIX = "Bearer ";
     private static final String COOKIE_NAME = "refreshToken";
 
-    private final MemberService memberService;
+    private final MemberDetailsService memberDetailsService;
 
     @Value("${spring.jwt.secret}")
     private String secret;
@@ -47,18 +47,19 @@ public class TokenProvider {
     }
 
     // refresh 토큰 생성 발급
-    public void generateRefreshToken(String userName, List<String> roles, HttpServletResponse response) {
+    public void generateRefreshToken(String userName, List<String> roles,
+        HttpServletResponse response) {
 
         String refreshToken = createToken(userName, roles, REFRESH_TOKEN_EXPIRE_TIME);
         tokenToCookie(refreshToken, response);
     }
 
     // accessToken 재발급
-    public String reGenerateAccessToken(HttpServletRequest request, HttpServletResponse response){
+    public String reGenerateAccessToken(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = getRefreshTokenFromCookie(request);
 
-        if(!validateToken(refreshToken)){ // 리프레시 토큰이 만료된 경우
+        if (!validateToken(refreshToken)) { // 리프레시 토큰이 만료된 경우
             throw new TokenException(TokenErrorCode.EXPIRED_REFRESH_TOKEN);
         }
 
@@ -73,7 +74,7 @@ public class TokenProvider {
     // 로그아웃
     // access 토큰은 클라이언트에서 제거한다는 가정(서버에서 관리하지 않는다.)
     // refresh 토큰을 쿠키에서 지운다.
-    public void logout(HttpServletRequest request, HttpServletResponse response){
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
 
         deleteRefreshToken(request, response);
     }
@@ -83,9 +84,10 @@ public class TokenProvider {
     @Transactional
     public Authentication getAuthentication(String jwt) {
 
-        UserDetails userDetails = memberService.loadUserByUsername(getUserName(jwt));
+        UserDetails userDetails = memberDetailsService.loadUserByUsername(getUserName(jwt));
 
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, "",
+            userDetails.getAuthorities());
     }
 
     // 유저 아이디 가져오기
@@ -95,7 +97,7 @@ public class TokenProvider {
     }
 
     // 유저 권한 가져오기
-    public List<String> getUserRole(String token){
+    public List<String> getUserRole(String token) {
 
         return List.of(String.valueOf(parseClaims(token).get(KEY_ROLES)));
     }
@@ -115,7 +117,9 @@ public class TokenProvider {
     // 토큰 검증
     public boolean validateToken(String token) {
 
-        if (!StringUtils.hasText(token)) return false;
+        if (!StringUtils.hasText(token)) {
+            return false;
+        }
 
         Claims claims = parseClaims(token);
 
@@ -134,7 +138,7 @@ public class TokenProvider {
     }
 
     // 토큰 생성
-    private String createToken(String userName, List<String> role, long tokenExpiredTime){
+    private String createToken(String userName, List<String> role, long tokenExpiredTime) {
 
         Claims claims = Jwts.claims().setSubject(userName);
         claims.put(KEY_ROLES, role);
@@ -152,7 +156,7 @@ public class TokenProvider {
     }
 
     // 토큰을 쿠키에 저장
-    private void tokenToCookie(String refreshToken, HttpServletResponse response){
+    private void tokenToCookie(String refreshToken, HttpServletResponse response) {
 
         Cookie cookie = new Cookie(COOKIE_NAME, refreshToken);
 
@@ -166,9 +170,9 @@ public class TokenProvider {
     }
 
     // refresh 토큰 쿠키에서 삭제
-    private void deleteRefreshToken(HttpServletRequest request, HttpServletResponse response){
+    private void deleteRefreshToken(HttpServletRequest request, HttpServletResponse response) {
 
-        if(request.getCookies() == null){
+        if (request.getCookies() == null) {
             throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
         }
 
@@ -177,7 +181,7 @@ public class TokenProvider {
             .findAny()
             .orElse(null);
 
-        if(cookie == null){
+        if (cookie == null) {
             throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
         }
 
@@ -188,9 +192,9 @@ public class TokenProvider {
     }
 
     // 쿠키에 저장된 리프레시 토큰 가져오기
-    private String getRefreshTokenFromCookie(HttpServletRequest request){
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
 
-        if(request.getCookies() == null){
+        if (request.getCookies() == null) {
             throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
         }
 
@@ -199,7 +203,7 @@ public class TokenProvider {
             .findAny()
             .orElse(null);
 
-        if(cookie == null){
+        if (cookie == null) {
             throw new TokenException(TokenErrorCode.NOT_FOUND_REFRESH_TOKEN);
         }
 
