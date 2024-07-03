@@ -3,7 +3,7 @@ package com.jh.movieticket.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.jh.movieticket.member.service.MemberService;
+import com.jh.movieticket.member.service.MemberDetailsService;
 import jakarta.servlet.http.Cookie;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -28,12 +28,12 @@ class TokenProviderTest {
     String secretVal;
 
     @MockBean
-    MemberService memberService;
+    MemberDetailsService memberDetailsService;
 
     @BeforeEach
     void before() throws NoSuchFieldException {
 
-        tokenProvider = new TokenProvider(memberService);
+        tokenProvider = new TokenProvider(memberDetailsService);
 
         // private 필드에 접근 및 값 변경
         Field secret = TokenProvider.class.getDeclaredField("secret");
@@ -42,7 +42,7 @@ class TokenProviderTest {
 
     @Test
     @DisplayName("access 토큰 생성")
-    void accessToken(){
+    void accessToken() {
 
         String userName = "test";
         List<String> roles = List.of("USER");
@@ -72,7 +72,7 @@ class TokenProviderTest {
 
     @Test
     @DisplayName("access 토큰 재발급")
-    void reGenerate(){
+    void reGenerate() {
 
         String userName = "test";
         List<String> roles = List.of("USER");
@@ -89,7 +89,7 @@ class TokenProviderTest {
 
     @Test
     @DisplayName("access 토큰 재발급 실패 - 쿠키 없음")
-    void reGenerateFail1(){
+    void reGenerateFail1() {
 
         String userName = "test";
         List<String> roles = List.of("USER");
@@ -98,7 +98,8 @@ class TokenProviderTest {
 
         tokenProvider.generateRefreshToken(userName, roles, response);
 
-        assertThatThrownBy(() -> tokenProvider.reGenerateAccessToken(request, response)).isInstanceOf(
+        assertThatThrownBy(
+            () -> tokenProvider.reGenerateAccessToken(request, response)).isInstanceOf(
             TokenException.class);
     }
 
@@ -126,6 +127,7 @@ class TokenProviderTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockHttpServletRequest request = new MockHttpServletRequest();
 
-        assertThatThrownBy(() -> tokenProvider.logout(request, response)).isInstanceOf(TokenException.class);
+        assertThatThrownBy(() -> tokenProvider.logout(request, response)).isInstanceOf(
+            TokenException.class);
     }
 }

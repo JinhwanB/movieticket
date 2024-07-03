@@ -59,10 +59,10 @@ class MemberServiceTest {
     MailService mailService;
 
     @MockBean
-    RedisTemplate<String, String> redisTemplate;
+    RedisTemplate<String, Object> redisTemplate;
 
     @Mock
-    ValueOperations<String, String> valueOperations;
+    ValueOperations<String, Object> valueOperations;
 
     @BeforeEach
     void set() {
@@ -163,6 +163,7 @@ class MemberServiceTest {
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.save(any())).thenReturn(member);
+        when(redisTemplate.hasKey(any())).thenReturn(true);
 
         Member registered = memberService.register(signUpRequest);
 
@@ -284,6 +285,7 @@ class MemberServiceTest {
             Optional.of(member));
         when(memberRepository.existsByUserIdAndDeleteDate(any(), any())).thenReturn(false);
         when(memberRepository.existsByEmailAndDeleteDate(any(), any())).thenReturn(false);
+        when(redisTemplate.hasKey(any())).thenReturn(true);
         when(memberRepository.save(any())).thenReturn(modified);
 
         Member modifiedMember = memberService.modifyMember("test", modifyRequest);

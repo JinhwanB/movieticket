@@ -76,6 +76,7 @@ class MemberControllerTest {
             + "    \"userId\":\"test\",\n"
             + "    \"userPw\":\"1234\",\n"
             + "    \"email\":\"test@naver.com\",\n"
+            + "    \"code\":\"3048\",\n"
             + "    \"role\":\"user\"\n"
             + "}";
 
@@ -111,7 +112,7 @@ class MemberControllerTest {
         mockMvc.perform(post("/members/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(signUpRequest))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andExpect(jsonPath("$.status").value(201))
             .andExpect(jsonPath("$.data").exists())
             .andDo(print());
