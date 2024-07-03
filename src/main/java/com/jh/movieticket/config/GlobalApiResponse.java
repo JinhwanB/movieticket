@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 // 전체 api 응답 형식 통일화
 @Getter
@@ -18,20 +19,20 @@ public class GlobalApiResponse<T> {
     private T data; // 응답으로 받은 데이터
 
     // 응답 성공시
-    public static <T> GlobalApiResponse<T> toGlobalResponse(T data){
+    public static <T> GlobalApiResponse<T> toGlobalResponse(HttpStatus httpStatus, T data){
 
         return GlobalApiResponse.<T>builder()
-            .status(200)
+            .status(httpStatus.value())
             .message("성공")
             .data(data)
             .build();
     }
 
     // 응답 실패 시
-    public static <T> GlobalApiResponse<T> toGlobalResponseFail(int status, String message){
+    public static <T> GlobalApiResponse<T> toGlobalResponseFail(HttpStatus httpStatus, String message){
 
         return GlobalApiResponse.<T>builder()
-            .status(status)
+            .status(httpStatus.value())
             .message(message)
             .build();
     }

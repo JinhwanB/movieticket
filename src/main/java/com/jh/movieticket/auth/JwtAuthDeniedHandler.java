@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -31,7 +32,7 @@ public class JwtAuthDeniedHandler implements AccessDeniedHandler {
         response.setCharacterEncoding("utf-8");
 
         ObjectMapper objectMapper = new ObjectMapper();
-        GlobalApiResponse<Object> result = GlobalApiResponse.toGlobalResponseFail(403, NOT_AUTH);
+        GlobalApiResponse<Object> result = GlobalApiResponse.toGlobalResponseFail(HttpStatus.FORBIDDEN, NOT_AUTH);
 
         response.getWriter().write(objectMapper.writeValueAsString(result));
     }

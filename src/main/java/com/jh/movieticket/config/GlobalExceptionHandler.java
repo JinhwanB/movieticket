@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
         log.error("404 NotFound = {}", e.getMessage());
 
         return new ResponseEntity<>(
-            GlobalApiResponse.toGlobalResponseFail(404, "요청한 페이지를 찾을 수 없습니다."),
+            GlobalApiResponse.toGlobalResponseFail(HttpStatus.NOT_FOUND, "요청한 페이지를 찾을 수 없습니다."),
             HttpStatus.NOT_FOUND);
     }
 
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
 
         log.error("405 NotSupported = {}", e.getMessage());
 
-        return new ResponseEntity<>(GlobalApiResponse.toGlobalResponseFail(405,
+        return new ResponseEntity<>(GlobalApiResponse.toGlobalResponseFail(HttpStatus.METHOD_NOT_ALLOWED,
             "해당 url을 지원하지 않습니다. HTTP Method(GET, PUT, POST, DELETE)가 정확한지 확인해주세요."),
             HttpStatus.METHOD_NOT_ALLOWED);
     }
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
         BindingResult bindingResult = e.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
         for (FieldError fieldError : fieldErrors) {
-            GlobalApiResponse<?> response = GlobalApiResponse.toGlobalResponseFail(400,
+            GlobalApiResponse<?> response = GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
                 fieldError.getDefaultMessage());
             list.add(response);
         }
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
         List<GlobalApiResponse<?>> list = new ArrayList<>();
         Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
         for (ConstraintViolation<?> constraintViolation : constraintViolations) {
-            GlobalApiResponse<Object> response = GlobalApiResponse.toGlobalResponseFail(400,
+            GlobalApiResponse<Object> response = GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
                 constraintViolation.getMessage());
             list.add(response);
         }
@@ -90,8 +90,7 @@ public class GlobalExceptionHandler {
         log.error("회원 관련 exception = {}", e.getMemberErrorCode().getMessage());
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(e.getMemberErrorCode()
-                .getStatus(), e.getMemberErrorCode().getMessage()));
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getMemberErrorCode().getMessage()));
     }
 
     // 메일 관련 에러 핸들러 -> 400 에러
@@ -101,7 +100,7 @@ public class GlobalExceptionHandler {
         log.error("메일 관련 exception = {}", e.getMailErrorCode().getMessage());
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(e.getMailErrorCode().getStatus(),
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
                 e.getMailErrorCode().getMessage()));
     }
 
@@ -112,6 +111,6 @@ public class GlobalExceptionHandler {
         log.error("토큰 관련 exception = {}", e.getTokenErrorCode().getMessage());
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(e.getTokenErrorCode().getStatus(), e.getTokenErrorCode().getMessage()));
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getTokenErrorCode().getMessage()));
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -56,7 +57,7 @@ public class MemberController {
 
         memberService.sendCode(email);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
     }
 
     /**
@@ -71,14 +72,14 @@ public class MemberController {
 
         memberService.verifyCode(request);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
     }
 
     /**
      * 회원가입
      *
      * @param request 회원가입을 위한 정보
-     * @return 응답 성공 -> 200 코드와 회원 아이디, 응답 실패 -> 실패 코드와 에러 메시지
+     * @return 응답 성공 -> 201 코드와 회원 아이디, 응답 실패 -> 실패 코드와 에러 메시지
      */
     @PostMapping("/auth/signup")
     public ResponseEntity<GlobalApiResponse<String>> signUp(
@@ -86,7 +87,7 @@ public class MemberController {
 
         String userId = memberService.register(request);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(userId));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED ,userId));
     }
 
     /**
@@ -107,7 +108,7 @@ public class MemberController {
         String accessToken = tokenProvider.generateAccessToken(userId, role);
         tokenProvider.generateRefreshToken(userId, role, response);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(accessToken));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, accessToken));
     }
 
     /**
@@ -128,7 +129,7 @@ public class MemberController {
             throw new MemberException(MemberErrorCode.ALREADY_LOGOUT);
         }
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
     }
 
     /**
@@ -145,7 +146,7 @@ public class MemberController {
 
         String accessToken = tokenProvider.reGenerateAccessToken(request, response);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(accessToken));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, accessToken));
     }
 
     /**
@@ -163,14 +164,14 @@ public class MemberController {
 
         MemberModifyDto.Response modifiedMember = memberService.modifyMember(userId, request);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(modifiedMember));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, modifiedMember));
     }
 
     /**
      * 회원 탈퇴
      *
      * @param userId 탈퇴할 회원 아이디
-     * @return 탈퇴 성공 시 -> 200코드와 성공메시지, 실패 시 -> 에러코드와 에러메시지
+     * @return 탈퇴 성공 시 -> 204코드와 성공메시지, 실패 시 -> 에러코드와 에러메시지
      */
     @DeleteMapping("/member/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -179,7 +180,7 @@ public class MemberController {
 
         memberService.deleteMember(userId);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(null));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.NO_CONTENT, null));
     }
 
     /**
@@ -195,7 +196,7 @@ public class MemberController {
 
         MemberVerifyDto.Response verifiedMember = memberService.verifyMember(userId);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(verifiedMember));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, verifiedMember));
     }
 
     /**
@@ -212,6 +213,6 @@ public class MemberController {
 
         Page<MemberVerifyDto.Response> allMembers = memberService.allMembers(pageable);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(allMembers));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, allMembers));
     }
 }
