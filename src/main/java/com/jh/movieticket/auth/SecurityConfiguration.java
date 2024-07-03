@@ -1,5 +1,6 @@
 package com.jh.movieticket.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
+    private final ObjectMapper objectMapper;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -35,7 +37,8 @@ public class SecurityConfiguration {
                     .anyRequest().authenticated()
             )
             .exceptionHandling(exception ->
-                exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()).accessDeniedHandler(new JwtAuthDeniedHandler()) // 401, 403 에러 핸들러
+                exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint(objectMapper))
+                    .accessDeniedHandler(new JwtAuthDeniedHandler(objectMapper)) // 401, 403 에러 핸들러
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(
