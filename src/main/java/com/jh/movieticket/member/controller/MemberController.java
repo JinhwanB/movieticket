@@ -90,8 +90,8 @@ public class MemberController {
 
         Member member = memberService.register(request);
 
-        return ResponseEntity.ok(
-            GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, member.getUserId()));
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, member.getUserId()));
     }
 
     /**
