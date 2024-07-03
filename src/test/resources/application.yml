@@ -11,17 +11,17 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    database: mysql
+    database: h2
     properties:
       hibernate:
         show_sql: true
         format_sql: true
         highlight_sql: true
   datasource:
-    username: ${MYSQL_USER_NAME} # 환경 변수
-    password: ${MYSQL_PWD} # 환경 변수
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/movieticket?characterEncoding=UTF-8
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:movieticket
 
   # mail
   mail:
@@ -62,4 +62,3 @@ logging:
         type:
           descriptor:
             sql: trace
-  config: classpath:logback-spring.xml
