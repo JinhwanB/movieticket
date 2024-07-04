@@ -1,6 +1,8 @@
 package com.jh.movieticket.member.service;
 
+import com.jh.movieticket.chat.repository.ChatRoomRepository;
 import com.jh.movieticket.config.CacheName;
+import com.jh.movieticket.grade.repository.GradeRepository;
 import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
@@ -12,6 +14,7 @@ import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
+import com.jh.movieticket.reservation.repository.ReservationRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -34,6 +37,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final GradeRepository gradeRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ReservationRepository reservationRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -182,16 +188,21 @@ public class MemberService {
     }
 
     /**
-     * 회원 탈퇴
+     * 회원 탈퇴, 연관 관계인 자식 엔티티 삭제
      *
      * @param userId 탈퇴할 회원 아이디
      */
-    // todo: 회원 탈퇴 시 자식 엔티티 함께 삭제 구현 예정(채팅방, 채팅 메시지, 예매, 평점)
     @CacheEvict(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
     public void deleteMember(String userId) {
 
         Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        // 자식 엔티티 하드 딜리트
+        Long id = member.getId();
+        gradeRepository.deleteGradeByMember(id);
+        chatRoomRepository.deleteChatRoomByMember(id);
+        reservationRepository.deleteReservationByMember(id);
 
         Member deletedMember = member.toBuilder()
             .deleteDate(LocalDateTime.now())
