@@ -4,6 +4,7 @@ import com.jh.movieticket.chat.domain.ChatRoom;
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.grade.domain.Grade;
 import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberServiceDto;
 import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.reservation.domain.Reservation;
 import jakarta.persistence.Column;
@@ -14,7 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-public class Member extends BaseTimeEntity implements Serializable {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -84,6 +84,23 @@ public class Member extends BaseTimeEntity implements Serializable {
             .userId(userId)
             .userPw(userPW)
             .email(email)
+            .build();
+    }
+
+    /**
+     * Entity -> ServiceDto
+     *
+     * @return ServiceDto
+     */
+    public MemberServiceDto toServiceDto() {
+
+        return MemberServiceDto.builder()
+            .id(id)
+            .userId(userId)
+            .email(email)
+            .registerDate(getRegisterDate())
+            .changeDate(getChangeDate())
+            .deleteDate(deleteDate)
             .build();
     }
 }
