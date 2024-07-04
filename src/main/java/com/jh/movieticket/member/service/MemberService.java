@@ -5,6 +5,7 @@ import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberServiceDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
@@ -142,7 +143,7 @@ public class MemberService {
      * @return 수정된 정보
      */
     @CachePut(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
-    public Member modifyMember(String userId, MemberModifyDto.Request request) {
+    public MemberServiceDto modifyMember(String userId, MemberModifyDto.Request request) {
 
         Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
@@ -171,7 +172,9 @@ public class MemberService {
             .userPW(encodedPw)
             .email(modifiedEmail)
             .build();
-        return memberRepository.save(modifiedMember);
+        Member save = memberRepository.save(modifiedMember);
+
+        return save.toServiceDto();
     }
 
     /**
@@ -200,10 +203,12 @@ public class MemberService {
      */
     @Transactional(readOnly = true)
     @Cacheable(key = "#userId", value = CacheName.MEMBER_CACHE_NAME)
-    public Member verifyMember(String userId) {
+    public MemberServiceDto verifyMember(String userId) {
 
-        return memberRepository.findByUserIdAndDeleteDate(userId, null)
+        Member member = memberRepository.findByUserIdAndDeleteDate(userId, null)
             .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        return member.toServiceDto();
     }
 
     /**
