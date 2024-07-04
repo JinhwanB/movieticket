@@ -1,8 +1,11 @@
 package com.jh.movieticket.member.domain;
 
+import com.jh.movieticket.chat.domain.ChatRoom;
 import com.jh.movieticket.config.BaseTimeEntity;
+import com.jh.movieticket.grade.domain.Grade;
 import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberVerifyDto;
+import com.jh.movieticket.reservation.domain.Reservation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,8 +13,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +49,15 @@ public class Member extends BaseTimeEntity implements Serializable {
 
     @Column
     private LocalDateTime deleteDate; // 삭제날짜
+
+    @OneToMany(mappedBy = "member")
+    private List<ChatRoom> chatRoomList; // 채팅 메시지
+
+    @OneToMany(mappedBy = "member")
+    private List<Grade> gradeList; // 평점
+
+    @OneToMany(mappedBy = "member")
+    private List<Reservation> reservationList; // 예매
 
     /**
      * Entity -> VerifyResponse
