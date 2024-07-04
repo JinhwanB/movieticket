@@ -3,8 +3,8 @@ package com.jh.movieticket.member.controller;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.config.GlobalApiResponse;
-import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberServiceDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.MemberVerifyDto;
@@ -88,10 +88,10 @@ public class MemberController {
     public ResponseEntity<GlobalApiResponse<String>> signUp(
         @Valid @RequestBody MemberSignUpDto.Request request) {
 
-        Member member = memberService.register(request);
+        MemberServiceDto register = memberService.register(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, member.getUserId()));
+            .body(GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, register.getUserId()));
     }
 
     /**
@@ -105,9 +105,9 @@ public class MemberController {
     public ResponseEntity<GlobalApiResponse<String>> login(
         @Valid @RequestBody MemberSignInDto.Request request, HttpServletResponse response) {
 
-        Member member = memberService.login(request);
-        String userId = member.getUserId();
-        List<String> role = List.of(member.getRole().getName());
+        MemberServiceDto login = memberService.login(request);
+        String userId = login.getUserId();
+        List<String> role = List.of(login.getRole().getName());
 
         String accessToken = tokenProvider.generateAccessToken(userId, role);
         tokenProvider.generateRefreshToken(userId, role, response);
@@ -166,10 +166,10 @@ public class MemberController {
         @NotBlank(message = "아이디를 입력해주세요.") @RequestParam String userId,
         @Valid @RequestBody MemberModifyDto.Request request) {
 
-        Member member = memberService.modifyMember(userId, request);
+        MemberServiceDto memberServiceDto = memberService.modifyMember(userId, request);
 
         return ResponseEntity.ok(
-            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, member.toModifyResponse()));
+            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, memberServiceDto.toModifyResponse()));
     }
 
     /**
@@ -199,10 +199,10 @@ public class MemberController {
     public ResponseEntity<GlobalApiResponse<MemberVerifyDto.Response>> verify(
         @NotBlank(message = "아이디를 입력해주세요.") @PathVariable String userId) {
 
-        Member member = memberService.verifyMember(userId);
+        MemberServiceDto memberServiceDto = memberService.verifyMember(userId);
 
         return ResponseEntity.ok(
-            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, member.toVerifyResponse()));
+            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, memberServiceDto.toVerifyResponse()));
     }
 
     /**
@@ -217,9 +217,9 @@ public class MemberController {
         @PageableDefault(sort = "registerDate", direction = Direction.ASC)
         Pageable pageable) {
 
-        Page<Member> members = memberService.allMembers(pageable);
-        List<Response> contentList = members.getContent().stream()
-            .map(Member::toVerifyResponse)
+        Page<MemberServiceDto> memberServiceDtos = memberService.allMembers(pageable);
+        List<Response> contentList = memberServiceDtos.getContent().stream()
+            .map(MemberServiceDto::toVerifyResponse)
             .toList();
         Page<MemberVerifyDto.Response> result = new PageImpl<>(contentList, pageable,
             contentList.size());

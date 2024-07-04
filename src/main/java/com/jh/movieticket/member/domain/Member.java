@@ -3,9 +3,7 @@ package com.jh.movieticket.member.domain;
 import com.jh.movieticket.chat.domain.ChatRoom;
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.grade.domain.Grade;
-import com.jh.movieticket.member.dto.MemberModifyDto;
 import com.jh.movieticket.member.dto.MemberServiceDto;
-import com.jh.movieticket.member.dto.MemberVerifyDto;
 import com.jh.movieticket.reservation.domain.Reservation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -60,34 +58,6 @@ public class Member extends BaseTimeEntity {
     private List<Reservation> reservationList; // 예매
 
     /**
-     * Entity -> VerifyResponse
-     *
-     * @return VerifyResponse
-     */
-    public MemberVerifyDto.Response toVerifyResponse() {
-
-        return MemberVerifyDto.Response.builder()
-            .userId(userId)
-            .userPw(userPW)
-            .email(email)
-            .build();
-    }
-
-    /**
-     * Entity -> ModifyResponse
-     *
-     * @return ModifyResponse
-     */
-    public MemberModifyDto.Response toModifyResponse() {
-
-        return MemberModifyDto.Response.builder()
-            .userId(userId)
-            .userPw(userPW)
-            .email(email)
-            .build();
-    }
-
-    /**
      * Entity -> ServiceDto
      *
      * @return ServiceDto
@@ -97,6 +67,8 @@ public class Member extends BaseTimeEntity {
         return MemberServiceDto.builder()
             .id(id)
             .userId(userId)
+            .userPW(userPW)
+            .role(role)
             .email(email)
             .registerDate(getRegisterDate())
             .changeDate(getChangeDate())

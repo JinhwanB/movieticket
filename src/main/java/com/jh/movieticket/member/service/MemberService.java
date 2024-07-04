@@ -13,6 +13,7 @@ import com.jh.movieticket.member.exception.MemberErrorCode;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,7 +83,7 @@ public class MemberService {
      * @param request 회원 아이디, 비밀번호, 이메일, 권한
      * @return 회원가입한 아이디
      */
-    public Member register(MemberSignUpDto.Request request) {
+    public MemberServiceDto register(MemberSignUpDto.Request request) {
 
         String userId = request.getUserId();
         String userPw = request.getUserPw();
@@ -111,7 +113,9 @@ public class MemberService {
             .email(email)
             .role(role)
             .build();
-        return memberRepository.save(member);
+        Member save = memberRepository.save(member);
+
+        return save.toServiceDto();
     }
 
     /**
@@ -120,7 +124,7 @@ public class MemberService {
      * @param request 아이디와 비밀번호
      * @return 아이디와 권한
      */
-    public Member login(MemberSignInDto.Request request) {
+    public MemberServiceDto login(MemberSignInDto.Request request) {
 
         String userId = request.getUserId();
         String userPw = request.getUserPw();
@@ -132,7 +136,7 @@ public class MemberService {
             throw new MemberException(MemberErrorCode.NOT_MATCH_PASSWORD);
         }
 
-        return member;
+        return member.toServiceDto();
     }
 
     /**
@@ -218,9 +222,14 @@ public class MemberService {
      * @return 페이징된 전체 회원 리스트
      */
     @Transactional(readOnly = true)
-    public Page<Member> allMembers(Pageable pageable) {
+    public Page<MemberServiceDto> allMembers(Pageable pageable) {
 
-        return memberRepository.findAllByDeleteDate(null, pageable);
+        Page<Member> members = memberRepository.findAllByDeleteDate(null, pageable);
+        List<MemberServiceDto> list = members.getContent().stream()
+            .map(Member::toServiceDto)
+            .toList();
+
+        return new PageImpl<>(list, pageable, list.size());
     }
 
     /**
