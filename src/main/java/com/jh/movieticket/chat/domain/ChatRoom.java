@@ -2,7 +2,6 @@ package com.jh.movieticket.chat.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.member.domain.Member;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,7 +38,7 @@ public class ChatRoom extends BaseTimeEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member; // 회원
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chatRoom")
     private List<ChatMessage> chatMessageList; // 채팅 메시지
 
     @Column
