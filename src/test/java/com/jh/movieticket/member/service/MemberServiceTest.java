@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jh.movieticket.chat.repository.ChatMessageRepository;
 import com.jh.movieticket.chat.repository.ChatRoomRepository;
 import com.jh.movieticket.grade.repository.GradeRepository;
 import com.jh.movieticket.mail.service.MailService;
@@ -63,6 +64,9 @@ class MemberServiceTest {
     ChatRoomRepository chatRoomRepository;
 
     @MockBean
+    ChatMessageRepository chatMessageRepository;
+
+    @MockBean
     ReservationRepository reservationRepository;
 
     @MockBean
@@ -80,7 +84,8 @@ class MemberServiceTest {
     @BeforeEach
     void set() {
 
-        memberService = new MemberService(memberRepository, gradeRepository, chatRoomRepository, reservationRepository, passwordEncoder, mailService,
+        memberService = new MemberService(memberRepository, gradeRepository, chatRoomRepository,
+            chatMessageRepository, reservationRepository, passwordEncoder, mailService,
             redisTemplate);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
