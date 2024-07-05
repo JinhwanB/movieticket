@@ -59,4 +59,29 @@ public class TheaterService {
 
         return savedTheater.toServiceDto();
     }
+
+    /**
+     * 상영관 이름 수정 서비스
+     *
+     * @param originName  수정할 상영관 이름
+     * @param changedName 수정하고자 하는 상영관 이름
+     * @return 수정된 상영관 정보
+     */
+    public TheaterServiceDto updateTheater(String originName, String changedName) {
+
+        Theater theater = theaterRepository.findByNameAndDeleteDate(originName, null)
+            .orElseThrow(() -> new TheaterException(TheaterErrorCode.NOT_FOUND_THEATER));
+
+        // 바꾸려는 이름이 중복되는 경우
+        if (theaterRepository.existsByNameAndDeleteDate(changedName, null)) {
+            throw new TheaterException(TheaterErrorCode.EXIST_NAME);
+        }
+
+        Theater changedTheater = theater.toBuilder()
+            .name(changedName)
+            .build();
+        Theater changed = theaterRepository.save(changedTheater);
+
+        return changed.toServiceDto();
+    }
 }
