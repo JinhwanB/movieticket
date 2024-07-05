@@ -9,15 +9,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jh.movieticket.chat.repository.ChatRoomRepository;
+import com.jh.movieticket.grade.repository.GradeRepository;
 import com.jh.movieticket.mail.service.MailService;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberServiceDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.MemberSignUpDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.member.repository.MemberRepository;
+import com.jh.movieticket.reservation.repository.ReservationRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +57,15 @@ class MemberServiceTest {
     MemberRepository memberRepository;
 
     @MockBean
+    GradeRepository gradeRepository;
+
+    @MockBean
+    ChatRoomRepository chatRoomRepository;
+
+    @MockBean
+    ReservationRepository reservationRepository;
+
+    @MockBean
     PasswordEncoder passwordEncoder;
 
     @MockBean
@@ -67,7 +80,7 @@ class MemberServiceTest {
     @BeforeEach
     void set() {
 
-        memberService = new MemberService(memberRepository, passwordEncoder, mailService,
+        memberService = new MemberService(memberRepository, gradeRepository, chatRoomRepository, reservationRepository, passwordEncoder, mailService,
             redisTemplate);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
@@ -165,9 +178,9 @@ class MemberServiceTest {
         when(memberRepository.save(any())).thenReturn(member);
         when(redisTemplate.hasKey(any())).thenReturn(true);
 
-        Member registered = memberService.register(signUpRequest);
+        MemberServiceDto register = memberService.register(signUpRequest);
 
-        assertThat(registered.getUserId()).isEqualTo(signUpRequest.getUserId());
+        assertThat(register.getUserId()).isEqualTo(signUpRequest.getUserId());
     }
 
     @Test
@@ -207,9 +220,9 @@ class MemberServiceTest {
             Optional.of(member));
         when(passwordEncoder.matches(any(), any())).thenReturn(true);
 
-        Member signInMember = memberService.login(signInRequest);
+        MemberServiceDto login = memberService.login(signInRequest);
 
-        assertThat(signInMember.getUserId()).isEqualTo("test");
+        assertThat(login.getUserId()).isEqualTo("test");
     }
 
     @Test
@@ -257,9 +270,9 @@ class MemberServiceTest {
         when(memberRepository.findByUserIdAndDeleteDate(any(), any())).thenReturn(
             Optional.of(member));
 
-        Member verifiedMember = memberService.verifyMember("test");
+        MemberServiceDto memberServiceDto = memberService.verifyMember("test");
 
-        assertThat(verifiedMember.getUserId()).isEqualTo("test");
+        assertThat(memberServiceDto.getUserId()).isEqualTo("test");
     }
 
     @Test
@@ -288,9 +301,9 @@ class MemberServiceTest {
         when(redisTemplate.hasKey(any())).thenReturn(true);
         when(memberRepository.save(any())).thenReturn(modified);
 
-        Member modifiedMember = memberService.modifyMember("test", modifyRequest);
+        MemberServiceDto memberServiceDto = memberService.modifyMember("test", modifyRequest);
 
-        assertThat(modifiedMember.getEmail()).isEqualTo(modifyRequest.getEmail());
+        assertThat(memberServiceDto.getEmail()).isEqualTo(modifyRequest.getEmail());
     }
 
     @Test
@@ -372,9 +385,9 @@ class MemberServiceTest {
 
         when(memberRepository.findAllByDeleteDate(any(), any())).thenReturn(memberList);
 
-        Page<Member> allMembers = memberService.allMembers(pageable);
+        Page<MemberServiceDto> memberServiceDtos = memberService.allMembers(pageable);
 
-        assertThat(allMembers.getNumberOfElements()).isEqualTo(1);
-        assertThat(allMembers.getContent().get(0).getUserId()).isEqualTo("test");
+        assertThat(memberServiceDtos.getNumberOfElements()).isEqualTo(1);
+        assertThat(memberServiceDtos.getContent().get(0).getUserId()).isEqualTo("test");
     }
 }
