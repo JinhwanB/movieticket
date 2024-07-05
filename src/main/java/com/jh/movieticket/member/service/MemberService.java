@@ -1,5 +1,6 @@
 package com.jh.movieticket.member.service;
 
+import com.jh.movieticket.chat.repository.ChatMessageRepository;
 import com.jh.movieticket.chat.repository.ChatRoomRepository;
 import com.jh.movieticket.config.CacheName;
 import com.jh.movieticket.grade.repository.GradeRepository;
@@ -39,6 +40,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final GradeRepository gradeRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ReservationRepository reservationRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
@@ -201,6 +203,7 @@ public class MemberService {
         // 자식 엔티티 하드 딜리트
         Long id = member.getId();
         gradeRepository.deleteGradeByMember(id);
+        chatMessageRepository.deleteChatMessageByMember(id);
         chatRoomRepository.deleteChatRoomByMember(id);
         reservationRepository.deleteReservationByMember(id);
 
