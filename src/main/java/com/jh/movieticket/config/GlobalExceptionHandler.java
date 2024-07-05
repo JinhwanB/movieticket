@@ -3,6 +3,8 @@ package com.jh.movieticket.config;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.mail.exception.MailException;
 import com.jh.movieticket.member.exception.MemberException;
+import com.jh.movieticket.theater.exception.SeatException;
+import com.jh.movieticket.theater.exception.TheaterException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -112,5 +114,25 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getTokenErrorCode().getMessage()));
+    }
+
+    // 좌석 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(SeatException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleSeatException(SeatException e){
+
+        log.error("좌석 관련 exception = {}", e.getSeatErrorCode().getMessage());
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getSeatErrorCode().getMessage()));
+    }
+
+    // 상영관 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(TheaterException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleTheaterException(TheaterException e){
+
+        log.error("상영관 관련 exception = {}", e.getTheaterErrorCode().getMessage());
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getTheaterErrorCode().getMessage()));
     }
 }
