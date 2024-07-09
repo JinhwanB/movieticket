@@ -16,9 +16,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.movieticket.auth.SecurityConfiguration;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.auth.TokenProvider;
-import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.member.domain.Role;
 import com.jh.movieticket.member.dto.MemberModifyDto;
+import com.jh.movieticket.member.dto.MemberServiceDto;
 import com.jh.movieticket.member.dto.MemberSignInDto;
 import com.jh.movieticket.member.dto.VerifyCodeDto;
 import com.jh.movieticket.member.service.MemberService;
@@ -50,7 +50,7 @@ class MemberControllerTest {
     MemberModifyDto.Request modifyRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "registerDate"));
     MockMvc mockMvc;
-    Member member;
+    MemberServiceDto member;
 
     @Autowired
     WebApplicationContext context;
@@ -95,7 +95,7 @@ class MemberControllerTest {
             .email("test@gmail.com")
             .build();
 
-        member = Member.builder()
+        member = MemberServiceDto.builder()
             .userId("test")
             .userPW("1234")
             .email("test@naver.com")
@@ -462,7 +462,7 @@ class MemberControllerTest {
     void modify() throws Exception {
 
         String userId = "test";
-        Member modifiedMember = member.toBuilder()
+        MemberServiceDto modifiedMember = member.toBuilder()
             .userId("ttt")
             .build();
 
@@ -638,13 +638,13 @@ class MemberControllerTest {
     @WithMockUser(username = "admin", roles = "ADMIN")
     void all() throws Exception {
 
-        Member admin = Member.builder()
+        MemberServiceDto admin = MemberServiceDto.builder()
             .userId("admin")
             .userPW("12345")
             .email("admin@gmail.com")
             .build();
-        List<Member> members = List.of(member, admin);
-        Page<Member> memberList = new PageImpl<>(members, pageable, members.size());
+        List<MemberServiceDto> members = List.of(member, admin);
+        Page<MemberServiceDto> memberList = new PageImpl<>(members, pageable, members.size());
 
         when(memberService.allMembers(any())).thenReturn(memberList);
 

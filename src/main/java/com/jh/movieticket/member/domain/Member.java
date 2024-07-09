@@ -1,8 +1,7 @@
 package com.jh.movieticket.member.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
-import com.jh.movieticket.member.dto.MemberModifyDto;
-import com.jh.movieticket.member.dto.MemberVerifyDto;
+import com.jh.movieticket.member.dto.MemberServiceDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,7 +9,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,7 +21,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-public class Member extends BaseTimeEntity implements Serializable {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,30 +44,21 @@ public class Member extends BaseTimeEntity implements Serializable {
     private LocalDateTime deleteDate; // 삭제날짜
 
     /**
-     * Entity -> VerifyResponse
+     * Entity -> ServiceDto
      *
-     * @return VerifyResponse
+     * @return ServiceDto
      */
-    public MemberVerifyDto.Response toVerifyResponse() {
+    public MemberServiceDto toServiceDto() {
 
-        return MemberVerifyDto.Response.builder()
+        return MemberServiceDto.builder()
+            .id(id)
             .userId(userId)
-            .userPw(userPW)
+            .userPW(userPW)
+            .role(role)
             .email(email)
-            .build();
-    }
-
-    /**
-     * Entity -> ModifyResponse
-     *
-     * @return ModifyResponse
-     */
-    public MemberModifyDto.Response toModifyResponse() {
-
-        return MemberModifyDto.Response.builder()
-            .userId(userId)
-            .userPw(userPW)
-            .email(email)
+            .registerDate(getRegisterDate())
+            .changeDate(getChangeDate())
+            .deleteDate(deleteDate)
             .build();
     }
 }
