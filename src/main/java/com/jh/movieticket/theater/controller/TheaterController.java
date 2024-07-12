@@ -104,3 +104,23 @@ public class TheaterController {
             GlobalApiResponse.toGlobalResponse(HttpStatus.OK, theater.toVerifyResponse()));
     }
 
+    /**
+     * 전체 상영관 리스트 조회 컨트롤러
+     *
+     * @param pageable 페이징 처리 설정
+     * @return 페이징 처리된 전체 상영관 리스트
+     */
+    @GetMapping
+    public ResponseEntity<GlobalApiResponse<Page<TheaterVerifyDto.Response>>> verifyAllOfTheater(
+        @PageableDefault(sort = "name", direction = Direction.ASC)
+        Pageable pageable) {
+
+        Page<TheaterServiceDto> theaterServiceDtos = theaterService.verifyAll(pageable);
+        List<Response> responseList = theaterServiceDtos.getContent().stream()
+            .map(TheaterServiceDto::toVerifyResponse)
+            .toList();
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK,
+            new PageImpl<>(responseList, pageable, responseList.size())));
+    }
+}
