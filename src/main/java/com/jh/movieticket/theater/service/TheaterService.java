@@ -126,4 +126,19 @@ public class TheaterService {
         theaterRepository.save(deletedTheater);
     }
 
+    /**
+     * 상영관 조회 서비스
+     *
+     * @param name 조회할 상영관 이름
+     * @return 조회된 상영관
+     */
+    @Cacheable(key = "#name", value = CacheName.THEATER_CACHE_NAME)
+    public TheaterServiceDto verify(String name) {
+
+        Theater theater = theaterRepository.findByNameAndDeleteDate(name, null)
+            .orElseThrow(() -> new TheaterException(TheaterErrorCode.NOT_FOUND_THEATER));
+
+        return theater.toServiceDto();
+    }
+
 }
