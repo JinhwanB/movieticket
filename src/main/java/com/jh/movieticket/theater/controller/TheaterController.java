@@ -72,3 +72,19 @@ public class TheaterController {
             GlobalApiResponse.toGlobalResponse(HttpStatus.OK, theater.toModifyResponse()));
     }
 
+    /**
+     * 상영관 삭제 컨트롤러
+     *
+     * @param theaterName 삭제할 상영관 이름
+     * @return 성공 시 204 코드, 실패 시 에러코드와 에러메시지
+     */
+    @DeleteMapping("/theater/{theaterName}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GlobalApiResponse<?>> deleteOfTheater(
+        @NotBlank(message = "삭제할 상영관 이름을 입력해주세요.") @Pattern(regexp = "^[1-9][0-9]?관$", message = "올바른 상영관 이름으로 입력해주세요. (ex. 1관, 2관, 10관)") @PathVariable String theaterName) {
+
+        theaterService.deleteTheater(theaterName);
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.NO_CONTENT, null));
+    }
+
