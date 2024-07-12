@@ -133,6 +133,7 @@ public class TheaterService {
      * @return 조회된 상영관
      */
     @Cacheable(key = "#name", value = CacheName.THEATER_CACHE_NAME)
+    @Transactional(readOnly = true)
     public TheaterServiceDto verify(String name) {
 
         Theater theater = theaterRepository.findByNameAndDeleteDate(name, null)
@@ -147,6 +148,7 @@ public class TheaterService {
      * @param pageable 페이징 설정
      * @return 페이징 처리된 전체 상영관 리스트
      */
+    @Transactional(readOnly = true)
     public Page<TheaterServiceDto> verifyAll(Pageable pageable) {
 
         List<Theater> theaterList = theaterRepository.findAllWithFetchJoin();
