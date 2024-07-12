@@ -94,7 +94,7 @@ public class TheaterController {
      * @param theaterName 조회할 상영관 이름
      * @return 성공 시 200 코드와 조회된 상영관, 실패 시 에러코드와 에러메시지
      */
-    @GetMapping("/theater/{theaterName}")
+    @GetMapping("/theater/{theaterName}/detail")
     public ResponseEntity<GlobalApiResponse<TheaterVerifyDto.Response>> verifyOfTheater(
         @NotBlank(message = "삭제할 상영관 이름을 입력해주세요.") @Pattern(regexp = "^[1-9][0-9]?관$", message = "올바른 상영관 이름으로 입력해주세요. (ex. 1관, 2관, 10관)") @PathVariable String theaterName) {
 
