@@ -34,6 +34,8 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authorizeRequest ->
                 authorizeRequest
                     .requestMatchers("/members/auth/**").permitAll()
+                    .requestMatchers("/theaters/theater/{theaterName}/detail").permitAll()
+                    .requestMatchers("/theaters").permitAll()
                     .anyRequest().authenticated()
             )
             .exceptionHandling(exception ->
