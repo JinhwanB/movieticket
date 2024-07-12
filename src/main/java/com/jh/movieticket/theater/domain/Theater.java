@@ -1,12 +1,17 @@
 package com.jh.movieticket.theater.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
+import com.jh.movieticket.theater.dto.TheaterServiceDto;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +32,8 @@ public class Theater extends BaseTimeEntity {
     @Column(nullable = false)
     private String name; // 상영관 이름
 
-    @Column(nullable = false)
-    private int seatCnt; // 총 좌석 수
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Seat> seatList; // 좌석
 
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
