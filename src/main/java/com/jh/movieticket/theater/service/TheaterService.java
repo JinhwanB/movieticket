@@ -1,17 +1,26 @@
 package com.jh.movieticket.theater.service;
 
+import com.jh.movieticket.config.CacheName;
+import com.jh.movieticket.movie.domain.MovieSchedule;
+import com.jh.movieticket.movie.repository.MovieScheduleRepository;
 import com.jh.movieticket.theater.domain.Seat;
 import com.jh.movieticket.theater.domain.Theater;
 import com.jh.movieticket.theater.dto.TheaterCreateDto;
 import com.jh.movieticket.theater.dto.TheaterServiceDto;
 import com.jh.movieticket.theater.exception.TheaterErrorCode;
 import com.jh.movieticket.theater.exception.TheaterException;
-import com.jh.movieticket.theater.repository.SeatRepository;
 import com.jh.movieticket.theater.repository.TheaterRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TheaterService {
 
     private final TheaterRepository theaterRepository;
-    private final SeatRepository seatRepository;
+    private final MovieScheduleRepository movieScheduleRepository;
 
     /**
      * 상영관을 생성하고 좌석도 함께 생성한다.
@@ -41,9 +50,9 @@ public class TheaterService {
 
         Theater theater = Theater.builder()
             .name(name)
-            .seatCnt(seatCnt)
             .build();
-        Theater savedTheater = theaterRepository.save(theater);
+
+        Theater save = theaterRepository.save(theater);
 
         // 좌석 함께 저장
         List<Seat> seatList = new ArrayList<>();
@@ -51,11 +60,16 @@ public class TheaterService {
             .forEach(i -> {
                 Seat seat = Seat.builder()
                     .seatNo(i)
-                    .theater(savedTheater)
+                    .theater(save)
                     .build();
                 seatList.add(seat);
             });
-        seatRepository.saveAll(seatList);
+
+        Theater theaterWithSeat = save.toBuilder()
+            .seatList(seatList)
+            .build();
+
+        Theater savedTheater = theaterRepository.save(theaterWithSeat);
 
         return savedTheater.toServiceDto();
     }
