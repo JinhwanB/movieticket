@@ -81,6 +81,8 @@ public class TheaterService {
      * @param changedName 수정하고자 하는 상영관 이름
      * @return 수정된 상영관 정보
      */
+    @CacheEvict(key = "#originName", value = CacheName.THEATER_CACHE_NAME)
+    @CachePut(key = "#changedName", value = CacheName.THEATER_CACHE_NAME)
     public TheaterServiceDto updateTheater(String originName, String changedName) {
 
         Theater theater = theaterRepository.findByNameAndDeleteDate(originName, null)
