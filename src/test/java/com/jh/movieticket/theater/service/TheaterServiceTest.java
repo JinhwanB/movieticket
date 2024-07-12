@@ -11,6 +11,7 @@ import com.jh.movieticket.movie.domain.MovieSchedule;
 import com.jh.movieticket.movie.repository.MovieScheduleRepository;
 import com.jh.movieticket.theater.domain.Theater;
 import com.jh.movieticket.theater.dto.TheaterCreateDto;
+import com.jh.movieticket.theater.dto.TheaterModifyDto;
 import com.jh.movieticket.theater.dto.TheaterServiceDto;
 import com.jh.movieticket.theater.exception.TheaterException;
 import com.jh.movieticket.theater.repository.TheaterRepository;
@@ -34,6 +35,7 @@ class TheaterServiceTest {
 
     TheaterService theaterService;
     TheaterCreateDto.Request createRequest;
+    TheaterModifyDto.Request modifyRequest;
 
     @MockBean
     TheaterRepository theaterRepository;
@@ -48,6 +50,11 @@ class TheaterServiceTest {
         createRequest = TheaterCreateDto.Request.builder()
             .name("test")
             .seatCnt(10)
+            .build();
+
+        modifyRequest = TheaterModifyDto.Request.builder()
+            .originName("test")
+            .changedName("table")
             .build();
     }
 
@@ -99,7 +106,7 @@ class TheaterServiceTest {
         when(theaterRepository.existsByNameAndDeleteDate(any(), any())).thenReturn(false);
         when(theaterRepository.save(any())).thenReturn(changed);
 
-        TheaterServiceDto changedTheater = theaterService.updateTheater("test", "table");
+        TheaterServiceDto changedTheater = theaterService.updateTheater(modifyRequest);
         assertThat(changedTheater.getName()).isEqualTo("table");
     }
 
@@ -109,7 +116,7 @@ class TheaterServiceTest {
 
         when(theaterRepository.findByNameAndDeleteDate(any(), any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> theaterService.updateTheater("test", "table")).isInstanceOf(
+        assertThatThrownBy(() -> theaterService.updateTheater(modifyRequest)).isInstanceOf(
             TheaterException.class);
     }
 
@@ -126,7 +133,7 @@ class TheaterServiceTest {
             Optional.of(theater));
         when(theaterRepository.existsByNameAndDeleteDate(any(), any())).thenReturn(true);
 
-        assertThatThrownBy(() -> theaterService.updateTheater("test", "table")).isInstanceOf(
+        assertThatThrownBy(() -> theaterService.updateTheater(modifyRequest)).isInstanceOf(
             TheaterException.class);
     }
 
