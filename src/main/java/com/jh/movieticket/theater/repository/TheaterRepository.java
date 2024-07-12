@@ -2,8 +2,10 @@ package com.jh.movieticket.theater.repository;
 
 import com.jh.movieticket.theater.domain.Theater;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,4 +15,7 @@ public interface TheaterRepository extends JpaRepository<Theater, Long> {
 
     Optional<Theater> findByNameAndDeleteDate(String name,
         LocalDateTime deleteDate); // 상영관 이름으로 상영관 조회
+
+    @Query("select distinct t from Theater t join fetch t.seatList")
+    List<Theater> findAllWithFetchJoin();
 }
