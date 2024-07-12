@@ -100,4 +100,30 @@ public class TheaterService {
 
         return changed.toServiceDto();
     }
+
+    /**
+     * 상영관 삭제 서비스
+     *
+     * @param name 삭제할 상영관 이름
+     */
+    @CacheEvict(key = "#name", value = CacheName.THEATER_CACHE_NAME)
+    public void deleteTheater(String name) {
+
+        Theater theater = theaterRepository.findByNameAndDeleteDate(name, null)
+            .orElseThrow(() -> new TheaterException(TheaterErrorCode.NOT_FOUND_THEATER));
+
+        List<MovieSchedule> movieScheduleList = movieScheduleRepository.findByTheaterId(
+            theater.getId());
+
+        if (!movieScheduleList.isEmpty()) { // 영화 스케줄이 존재하는 경우
+            throw new TheaterException(TheaterErrorCode.EXIST_SCHEDULE);
+        }
+
+        Theater deletedTheater = theater.toBuilder()
+            .seatList(new ArrayList<>()) // 연관관계 해제시킴으로서 좌석 삭제(orphanRemoval)
+            .deleteDate(LocalDateTime.now())
+            .build();
+        theaterRepository.save(deletedTheater);
+    }
+
 }
