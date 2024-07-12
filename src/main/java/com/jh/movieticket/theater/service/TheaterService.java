@@ -6,6 +6,7 @@ import com.jh.movieticket.movie.repository.MovieScheduleRepository;
 import com.jh.movieticket.theater.domain.Seat;
 import com.jh.movieticket.theater.domain.Theater;
 import com.jh.movieticket.theater.dto.TheaterCreateDto;
+import com.jh.movieticket.theater.dto.TheaterModifyDto;
 import com.jh.movieticket.theater.dto.TheaterServiceDto;
 import com.jh.movieticket.theater.exception.TheaterErrorCode;
 import com.jh.movieticket.theater.exception.TheaterException;
@@ -75,15 +76,17 @@ public class TheaterService {
     }
 
     /**
-     * 상영관 이름 수정 서비스
+     * 상영관 수정 서비스
      *
-     * @param originName  수정할 상영관 이름
-     * @param changedName 수정하고자 하는 상영관 이름
-     * @return 수정된 상영관 정보
+     * @param theaterModifyDto 수정할 정보
+     * @return 수정된 상영관
      */
-    @CacheEvict(key = "#originName", value = CacheName.THEATER_CACHE_NAME)
-    @CachePut(key = "#changedName", value = CacheName.THEATER_CACHE_NAME)
-    public TheaterServiceDto updateTheater(String originName, String changedName) {
+    @CacheEvict(key = "#theaterModifyDto.originName", value = CacheName.THEATER_CACHE_NAME)
+    @CachePut(key = "#theaterModifyDto.changedName", value = CacheName.THEATER_CACHE_NAME)
+    public TheaterServiceDto updateTheater(TheaterModifyDto.Request theaterModifyDto) {
+
+        String originName = theaterModifyDto.getOriginName();
+        String changedName = theaterModifyDto.getChangedName();
 
         Theater theater = theaterRepository.findByNameAndDeleteDate(originName, null)
             .orElseThrow(() -> new TheaterException(TheaterErrorCode.NOT_FOUND_THEATER));
