@@ -55,3 +55,20 @@ public class TheaterController {
             GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, theater.toCreateResponse()));
     }
 
+    /**
+     * 상영관 수정 컨트롤러
+     *
+     * @param request 수정할 정보
+     * @return 성공 시 200 코드와 수정된 상영관, 실패 시 에러코드와 에러메시지
+     */
+    @PutMapping("/theater")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GlobalApiResponse<TheaterModifyDto.Response>> updateOfTheater(
+        @Valid @RequestBody TheaterModifyDto.Request request) {
+
+        TheaterServiceDto theater = theaterService.updateTheater(request);
+
+        return ResponseEntity.ok(
+            GlobalApiResponse.toGlobalResponse(HttpStatus.OK, theater.toModifyResponse()));
+    }
+
