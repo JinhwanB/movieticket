@@ -21,4 +21,42 @@ public class TheaterServiceDto implements Serializable {
     private LocalDateTime registerDate; // 생성 날짜
     private LocalDateTime changeDate; // 수정 날짜
     private LocalDateTime deleteDate; // 삭제 날짜
+
+    /**
+     * ServiceDto -> CreateDto.Response
+     *
+     * @return CreateDto.Response
+     */
+    public TheaterCreateDto.Response toCreateResponse() {
+
+        return TheaterCreateDto.Response.builder()
+            .name(name)
+            .seatCnt(seatCnt)
+            .build();
+    }
+
+    /**
+     * ServiceDto -> ModifyDto.Response
+     *
+     * @return ModifyDto.Response
+     */
+    public TheaterModifyDto.Response toModifyResponse() {
+
+        return TheaterModifyDto.Response.builder()
+            .name(name)
+            .seatCnt(seatCnt)
+            .build();
+    }
+
+    /**
+     * ServiceDto -> VerifyDto.Response
+     * @return VerifyDto.Response
+     */
+    public TheaterVerifyDto.Response toVerifyResponse(){
+
+        return TheaterVerifyDto.Response.builder()
+            .name(name)
+            .seatCnt(seatCnt)
+            .build();
+    }
 }
