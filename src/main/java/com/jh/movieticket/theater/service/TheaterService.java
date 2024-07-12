@@ -141,4 +141,19 @@ public class TheaterService {
         return theater.toServiceDto();
     }
 
+    /**
+     * 전체 상영관 조회 서비스
+     *
+     * @param pageable 페이징 설정
+     * @return 페이징 처리된 전체 상영관 리스트
+     */
+    public Page<TheaterServiceDto> verifyAll(Pageable pageable) {
+
+        List<Theater> theaterList = theaterRepository.findAllWithFetchJoin();
+        List<TheaterServiceDto> theaterServiceDtoList = theaterList.stream()
+            .map(Theater::toServiceDto)
+            .toList();
+
+        return new PageImpl<>(theaterServiceDtoList, pageable, theaterServiceDtoList.size());
+    }
 }
