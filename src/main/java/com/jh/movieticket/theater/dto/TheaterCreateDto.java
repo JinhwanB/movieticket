@@ -25,4 +25,14 @@ public class TheaterCreateDto {
         @Positive(message = "총 좌석 수는 0 또는 음수일 수 없습니다.")
         private int seatCnt; // 총 좌석 수
     }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @Builder(toBuilder = true)
+    public static class Response {
+
+        private String name; // 상영관 이름
+        private int seatCnt; // 총 좌석 수
+    }
 }
