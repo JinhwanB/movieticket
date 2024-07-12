@@ -1,5 +1,6 @@
 package com.jh.movieticket.theater.dto;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
-public class TheaterServiceDto {
+public class TheaterServiceDto implements Serializable {
 
     private Long id;
     private String name; // 상영관 이름
