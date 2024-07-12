@@ -37,4 +37,17 @@ public class Theater extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
+
+    // Entity -> ServiceDto
+    public TheaterServiceDto toServiceDto(){
+
+        return TheaterServiceDto.builder()
+            .id(id)
+            .name(name)
+            .seatCnt(seatList.size())
+            .registerDate(getRegisterDate())
+            .changeDate(getChangeDate())
+            .deleteDate(deleteDate)
+            .build();
+    }
 }
