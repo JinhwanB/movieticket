@@ -16,6 +16,6 @@ public interface TheaterRepository extends JpaRepository<Theater, Long> {
     Optional<Theater> findByNameAndDeleteDate(String name,
         LocalDateTime deleteDate); // 상영관 이름으로 상영관 조회
 
-    @Query("select distinct t from Theater t join fetch t.seatList")
+    @Query("select distinct t from Theater t left join fetch t.seatList where t.deleteDate is null")
     List<Theater> findAllWithFetchJoin();
 }
