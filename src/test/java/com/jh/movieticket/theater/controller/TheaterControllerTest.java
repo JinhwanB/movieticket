@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,6 +14,7 @@ import com.jh.movieticket.auth.SecurityConfiguration;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.theater.dto.TheaterCreateDto;
 import com.jh.movieticket.theater.dto.TheaterCreateDto.Request;
+import com.jh.movieticket.theater.dto.TheaterModifyDto;
 import com.jh.movieticket.theater.dto.TheaterServiceDto;
 import com.jh.movieticket.theater.service.TheaterService;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +35,7 @@ class TheaterControllerTest {
     MockMvc mockMvc;
     TheaterServiceDto theaterServiceDto;
     TheaterCreateDto.Request createRequest;
+    TheaterModifyDto.Request modifyRequest;
 
     @MockBean
     TheaterService theaterService;
@@ -62,6 +65,11 @@ class TheaterControllerTest {
         createRequest = TheaterCreateDto.Request.builder()
             .name("1관")
             .seatCnt(30)
+            .build();
+
+        modifyRequest = TheaterModifyDto.Request.builder()
+            .originName("1관")
+            .changedName("2관")
             .build();
     }
 
@@ -152,6 +160,142 @@ class TheaterControllerTest {
         when(theaterService.createTheater(any())).thenReturn(theaterServiceDto);
 
         mockMvc.perform(post("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterModifyController() throws Exception {
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - url 경로 다름")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterModifyControllerFail1() throws Exception {
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theaterer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - 로그인 x")
+    void theaterModifyControllerFail2() throws Exception {
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - 권한 없음")
+    @WithMockUser(username = "admin", roles = "USER")
+    void theaterModifyControllerFail3() throws Exception {
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifyRequest)))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - originName 미입력")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterModifyControllerFail4() throws Exception {
+
+        TheaterModifyDto.Request badRequest = modifyRequest.toBuilder()
+            .originName("")
+            .build();
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - originName 형식 틀림")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterModifyControllerFail5() throws Exception {
+
+        TheaterModifyDto.Request badRequest = modifyRequest.toBuilder()
+            .originName("111관")
+            .build();
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - changeName 미입력")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterModifyControllerFail6() throws Exception {
+
+        TheaterModifyDto.Request badRequest = modifyRequest.toBuilder()
+            .changedName("")
+            .build();
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 수정 컨트롤러 실패 - changeName 형식 틀림")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterModifyControllerFail7() throws Exception {
+
+        TheaterModifyDto.Request badRequest = modifyRequest.toBuilder()
+            .changedName("111관")
+            .build();
+
+        when(theaterService.updateTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(put("/theaters/theater")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(badRequest)))
             .andExpect(status().isBadRequest())
