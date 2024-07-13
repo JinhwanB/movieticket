@@ -1,9 +1,11 @@
 package com.jh.movieticket.theater.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -364,6 +366,55 @@ class TheaterControllerTest {
     void theaterDeleteControllerFail5() throws Exception {
 
         mockMvc.perform(delete("/theaters/theater/111관"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 조회 컨트롤러")
+    void theaterVerifyController() throws Exception {
+
+        when(theaterService.verify(anyString())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(get("/theaters/theater/1관/detail"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 조회 컨트롤러 실패 - url 경로 틀림")
+    void theaterVerifyControllerFail1() throws Exception {
+
+        when(theaterService.verify(anyString())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(get("/theaters/theater/1관/de"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 조회 컨트롤러 실패 - 조회할 상영관 입력 x")
+    void theaterVerifyControllerFail2() throws Exception {
+
+        when(theaterService.verify(anyString())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(get("/theaters/theater/ /detail"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 조회 컨트롤러 실패 - 조회할 상영관 이름 형식 틀림")
+    void theaterVerifyControllerFail3() throws Exception {
+
+        when(theaterService.verify(anyString())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(get("/theaters/theater/111관/detail"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400))
             .andDo(print());
