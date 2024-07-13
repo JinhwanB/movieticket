@@ -154,8 +154,8 @@ public class TheaterService {
     @Transactional(readOnly = true)
     public Page<TheaterServiceDto> verifyAll(Pageable pageable) {
 
-        List<Theater> theaterList = theaterRepository.findAllWithFetchJoin();
-        List<TheaterServiceDto> theaterServiceDtoList = theaterList.stream()
+        Page<Theater> theaterList = theaterRepository.findAllByDeleteDateIsNull(pageable);
+        List<TheaterServiceDto> theaterServiceDtoList = theaterList.getContent().stream()
             .map(Theater::toServiceDto)
             .toList();
 
