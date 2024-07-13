@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -32,6 +33,7 @@ public class Theater extends BaseTimeEntity {
     @Column(nullable = false)
     private String name; // 상영관 이름
 
+    @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seatList; // 좌석
 
