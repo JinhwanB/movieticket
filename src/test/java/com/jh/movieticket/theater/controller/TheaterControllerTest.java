@@ -20,12 +20,20 @@ import com.jh.movieticket.theater.dto.TheaterCreateDto.Request;
 import com.jh.movieticket.theater.dto.TheaterModifyDto;
 import com.jh.movieticket.theater.dto.TheaterServiceDto;
 import com.jh.movieticket.theater.service.TheaterService;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,6 +47,8 @@ class TheaterControllerTest {
     TheaterServiceDto theaterServiceDto;
     TheaterCreateDto.Request createRequest;
     TheaterModifyDto.Request modifyRequest;
+    Pageable pageable = PageRequest.of(0, 10, Direction.ASC, "name");
+    Page<TheaterServiceDto> pageableList;
 
     @MockBean
     TheaterService theaterService;
@@ -74,6 +84,15 @@ class TheaterControllerTest {
             .originName("1관")
             .changedName("2관")
             .build();
+
+        List<TheaterServiceDto> list = new ArrayList<>();
+        TheaterServiceDto secondServiceDto = theaterServiceDto.toBuilder()
+            .name("2관")
+            .seatCnt(20)
+            .build();
+        list.add(theaterServiceDto);
+        list.add(secondServiceDto);
+        pageableList = new PageImpl<>(list, pageable, list.size());
     }
 
     @Test
@@ -417,6 +436,31 @@ class TheaterControllerTest {
         mockMvc.perform(get("/theaters/theater/111관/detail"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 전체 리스트 조회 컨트롤러")
+    void theaterVerifyAllController() throws Exception {
+
+        when(theaterService.verifyAll(any())).thenReturn(pageableList);
+
+        mockMvc.perform(get("/theaters"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 전체 리스트 조회 컨트롤러 실패 - url 경로 틀림")
+    void theaterVerifyAllControllerFail() throws Exception {
+
+        when(theaterService.verifyAll(any())).thenReturn(pageableList);
+
+        mockMvc.perform(get("/theater"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
             .andDo(print());
     }
 }
