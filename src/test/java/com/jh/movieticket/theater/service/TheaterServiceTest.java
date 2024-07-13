@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -227,8 +228,9 @@ class TheaterServiceTest {
             .build();
         List<Theater> theaterList = List.of(theater1, theater2);
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "name"));
+        Page<Theater> pagingList = new PageImpl<>(theaterList, pageable, theaterList.size());
 
-        when(theaterRepository.findAllWithFetchJoin()).thenReturn(theaterList);
+        when(theaterRepository.findAllByDeleteDateIsNull(any())).thenReturn(pagingList);
 
         Page<TheaterServiceDto> theaterServiceDtos = theaterService.verifyAll(pageable);
 

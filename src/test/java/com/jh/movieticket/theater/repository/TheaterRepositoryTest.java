@@ -13,10 +13,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 
 @DataJpaTest
 @Import(JpaAuditingConfig.class)
 class TheaterRepositoryTest {
+
+    Pageable pageable = PageRequest.of(0, 10, Direction.ASC, "name");
 
     @Autowired
     TheaterRepository theaterRepository;
@@ -65,8 +71,10 @@ class TheaterRepositoryTest {
     @DisplayName("삭제되지 않은 상영관 전체 리스트 조회")
     void findALlOfTheater() {
 
-        List<Theater> theaterList = theaterRepository.findAllWithFetchJoin();
+        Page<Theater> theaters = theaterRepository.findAllByDeleteDateIsNull(pageable);
 
-        assertThat(theaterList.get(1).getSeatList().get(0).getSeatNo()).isEqualTo(1);
+        assertThat(theaters.getTotalElements()).isEqualTo(2);
+        assertThat(theaters.getContent().get(0).getName()).isEqualTo("table");
+        assertThat(theaters.getContent().get(0).getSeatList().get(0).getSeatNo()).isEqualTo(1);
     }
 }
