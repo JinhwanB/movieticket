@@ -3,6 +3,7 @@ package com.jh.movieticket.theater.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -298,6 +299,71 @@ class TheaterControllerTest {
         mockMvc.perform(put("/theaters/theater")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 삭제 컨트롤러")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterDeleteController() throws Exception {
+
+        mockMvc.perform(delete("/theaters/theater/1관"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 삭제 컨트롤러 실패 - url 경로 다름")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterDeleteControllerFail1() throws Exception {
+
+        mockMvc.perform(delete("/theaters/theate"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 삭제 컨트롤러 실패 - 로그인 x")
+    void theaterDeleteControllerFail2() throws Exception {
+
+        mockMvc.perform(delete("/theaters/theater/1관"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 삭제 컨트롤러 실패 - 권한 없음")
+    @WithMockUser(username = "admin", roles = "USER")
+    void theaterDeleteControllerFail3() throws Exception {
+
+        mockMvc.perform(delete("/theaters/theater/1관"))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 삭제 컨트롤러 실패 - 삭제할 상영관 입력 x")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterDeleteControllerFail4() throws Exception {
+
+        mockMvc.perform(delete("/theaters/theater/ "))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 삭제 컨트롤러 실패 - 삭제할 상영관 이름 형식 틀림")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterDeleteControllerFail5() throws Exception {
+
+        mockMvc.perform(delete("/theaters/theater/111관"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400))
             .andDo(print());
