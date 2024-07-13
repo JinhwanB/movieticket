@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.movieticket.auth.SecurityConfiguration;
 import com.jh.movieticket.auth.TokenProvider;
 import com.jh.movieticket.theater.dto.TheaterCreateDto;
+import com.jh.movieticket.theater.dto.TheaterCreateDto.Request;
 import com.jh.movieticket.theater.dto.TheaterServiceDto;
 import com.jh.movieticket.theater.service.TheaterService;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +47,7 @@ class TheaterControllerTest {
     WebApplicationContext context;
 
     @BeforeEach
-    void before(){
+    void before() {
 
         mockMvc = MockMvcBuilders
             .webAppContextSetup(context)
@@ -72,11 +73,89 @@ class TheaterControllerTest {
         when(theaterService.createTheater(any())).thenReturn(theaterServiceDto);
 
         mockMvc.perform(post("/theaters/theater")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(createRequest)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.status").value(201))
             .andExpect(jsonPath("$.data").exists())
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 생성 컨트롤러 실패 - 로그인 x")
+    void theaterCreateControllerFail1() throws Exception {
+
+        mockMvc.perform(post("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 생성 컨트롤러 실패 - 권한 없음")
+    @WithMockUser(username = "admin", roles = "USER")
+    void theaterCreateControllerFail2() throws Exception {
+
+        mockMvc.perform(post("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 생성 컨트롤러 실패 - url 경로 다름")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterCreateControllerFail3() throws Exception {
+
+        when(theaterService.createTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(post("/theaters/theaterer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 생성 컨트롤러 실패 - 상영관 이름 미입력")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterCreateControllerFail4() throws Exception {
+
+        Request badRequest = createRequest.toBuilder()
+            .name("")
+            .build();
+
+        when(theaterService.createTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(post("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("상영관 생성 컨트롤러 실패 - 상영관 이름 형식 틀림")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void theaterCreateControllerFail5() throws Exception {
+
+        Request badRequest = createRequest.toBuilder()
+            .name("111관")
+            .build();
+
+        when(theaterService.createTheater(any())).thenReturn(theaterServiceDto);
+
+        mockMvc.perform(post("/theaters/theater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(badRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].status").value(400))
             .andDo(print());
     }
 }
