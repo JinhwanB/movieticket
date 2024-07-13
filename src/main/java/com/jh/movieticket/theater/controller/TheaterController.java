@@ -51,8 +51,7 @@ public class TheaterController {
 
         TheaterServiceDto theater = theaterService.createTheater(request);
 
-        return ResponseEntity.ok(
-            GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, theater.toCreateResponse()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, theater.toCreateResponse()));
     }
 
     /**
@@ -76,7 +75,7 @@ public class TheaterController {
      * 상영관 삭제 컨트롤러
      *
      * @param theaterName 삭제할 상영관 이름
-     * @return 성공 시 204 코드, 실패 시 에러코드와 에러메시지
+     * @return 성공 시 200 코드, 실패 시 에러코드와 에러메시지
      */
     @DeleteMapping("/theater/{theaterName}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -85,7 +84,7 @@ public class TheaterController {
 
         theaterService.deleteTheater(theaterName);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.NO_CONTENT, null));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
     }
 
     /**
