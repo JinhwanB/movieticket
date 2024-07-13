@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,10 +34,16 @@ public class SecurityConfiguration {
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorizeRequest ->
                 authorizeRequest
-                    .requestMatchers("/members/auth/**").permitAll()
-                    .requestMatchers("/theaters/theater/{theaterName}/detail").permitAll()
-                    .requestMatchers("/theaters").permitAll()
-                    .anyRequest().authenticated()
+                    .requestMatchers("/members/logout").authenticated()
+                    .requestMatchers("/members/token").authenticated()
+                    .requestMatchers("/members/member").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/members/member/{userId}").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/members/member/{userId}").authenticated()
+                    .requestMatchers("/members").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/theaters/theater").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/theaters/theater").authenticated()
+                    .requestMatchers("/theaters/theater/{theaterName}").authenticated()
+                    .anyRequest().permitAll()
             )
             .exceptionHandling(exception ->
                 exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint(objectMapper))
