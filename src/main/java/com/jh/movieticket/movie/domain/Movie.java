@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,4 +61,38 @@ public class Movie extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
+
+    /**
+     * Entity -> ServiceDto
+     *
+     * @return ServiceDto
+     */
+    public MovieServiceDto toServiceDto() {
+
+        List<String> actorList =
+            (movieActorList == null || movieActorList.isEmpty()) ? null : movieActorList.stream()
+                .map(ma -> ma.getActor().getName())
+                .toList();
+
+        List<String> genreList =
+            (movieGenreList == null || movieGenreList.isEmpty()) ? null : movieGenreList.stream()
+                .map(mg -> mg.getGenre().getName())
+                .toList();
+
+        return MovieServiceDto.builder()
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseDate(releaseDate.getYear() + "년 " + releaseDate.getMonthValue() + "월 "
+                + releaseDate.getDayOfMonth() + "일")
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType.getDescription())
+            .build();
+    }
 }
