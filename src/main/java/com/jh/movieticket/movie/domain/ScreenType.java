@@ -7,9 +7,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ScreenType {
-    NOW("NOW"), // 현재상영작
-    PREVIOUS("PREVIOUS"), // 지난 상영작
-    EXPECTED("EXPECTED"); // 상영 예정작
+    NOW("NOW", "현재상영작"), // 현재상영작
+    PREVIOUS("PREVIOUS", "지난상영작"), // 지난 상영작
+    EXPECTED("EXPECTED", "상영예정작"); // 상영 예정작
 
     private final String name;
+    private final String description;
 }
