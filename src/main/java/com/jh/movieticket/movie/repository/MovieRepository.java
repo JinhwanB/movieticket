@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     Optional<Movie> findByTitleAndDeleteDateIsNull(String title); // 삭제되지 않은 데이터 중 이름으로 조회
+
+    boolean existsByTitleAndDeleteDateIsNull(String title); // 중복 이름인지 확인
 }
