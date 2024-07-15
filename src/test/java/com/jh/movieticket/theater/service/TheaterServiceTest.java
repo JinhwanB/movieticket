@@ -23,6 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -44,9 +45,12 @@ class TheaterServiceTest {
     @MockBean
     MovieScheduleRepository movieScheduleRepository;
 
+    @MockBean
+    CacheManager redisCacheManager;
+
     @BeforeEach
     void before() {
-        theaterService = new TheaterService(theaterRepository, movieScheduleRepository);
+        theaterService = new TheaterService(theaterRepository, movieScheduleRepository, redisCacheManager);
 
         createRequest = TheaterCreateDto.Request.builder()
             .name("test")
@@ -146,13 +150,12 @@ class TheaterServiceTest {
             .name("test")
             .seatList(new ArrayList<>())
             .build();
-        List<MovieSchedule> movieScheduleList = new ArrayList<>();
 
-        when(theaterRepository.findByNameAndDeleteDate(any(), any())).thenReturn(
+        when(theaterRepository.findByIdAndDeleteDateIsNull(any())).thenReturn(
             Optional.of(theater));
-        when(movieScheduleRepository.findByTheaterId(any())).thenReturn(movieScheduleList);
+        when(movieScheduleRepository.existsByTheater(any())).thenReturn(false);
 
-        theaterService.deleteTheater("test");
+        theaterService.deleteTheater(any());
 
         verify(theaterRepository, times(1)).save(any());
     }
@@ -163,7 +166,7 @@ class TheaterServiceTest {
 
         when(theaterRepository.findByNameAndDeleteDate(any(), any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> theaterService.deleteTheater("test")).isInstanceOf(
+        assertThatThrownBy(() -> theaterService.deleteTheater(1L)).isInstanceOf(
             TheaterException.class);
     }
 
@@ -183,9 +186,9 @@ class TheaterServiceTest {
 
         when(theaterRepository.findByNameAndDeleteDate(any(), any())).thenReturn(
             Optional.of(theater));
-        when(movieScheduleRepository.findByTheaterId(any())).thenReturn(movieScheduleList);
+        when(movieScheduleRepository.existsByTheater(any())).thenReturn(true);
 
-        assertThatThrownBy(() -> theaterService.deleteTheater("test")).isInstanceOf(
+        assertThatThrownBy(() -> theaterService.deleteTheater(1L)).isInstanceOf(
             TheaterException.class);
     }
 

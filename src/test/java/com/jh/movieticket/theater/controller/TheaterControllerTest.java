@@ -32,7 +32,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -330,7 +329,7 @@ class TheaterControllerTest {
     @WithMockUser(username = "admin", roles = "ADMIN")
     void theaterDeleteController() throws Exception {
 
-        mockMvc.perform(delete("/theaters/theater/1관"))
+        mockMvc.perform(delete("/theaters/theater/1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(200))
             .andDo(print());
@@ -351,7 +350,7 @@ class TheaterControllerTest {
     @DisplayName("상영관 삭제 컨트롤러 실패 - 로그인 x")
     void theaterDeleteControllerFail2() throws Exception {
 
-        mockMvc.perform(delete("/theaters/theater/1관"))
+        mockMvc.perform(delete("/theaters/theater/1"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andDo(print());
@@ -362,7 +361,7 @@ class TheaterControllerTest {
     @WithMockUser(username = "admin", roles = "USER")
     void theaterDeleteControllerFail3() throws Exception {
 
-        mockMvc.perform(delete("/theaters/theater/1관"))
+        mockMvc.perform(delete("/theaters/theater/1"))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.status").value(403))
             .andDo(print());
@@ -375,8 +374,8 @@ class TheaterControllerTest {
 
         mockMvc.perform(delete("/theaters/theater/ "))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[0].status").value(400))
-            .andDo(print());
+            .andDo(print())
+            .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -384,7 +383,7 @@ class TheaterControllerTest {
     @WithMockUser(username = "admin", roles = "ADMIN")
     void theaterDeleteControllerFail5() throws Exception {
 
-        mockMvc.perform(delete("/theaters/theater/111관"))
+        mockMvc.perform(delete("/theaters/theater/0"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400))
             .andDo(print());
