@@ -21,6 +21,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,6 +160,23 @@ public class MovieService {
             .build();
         movieRepository.save(deletedMovie);
     }
+
+    /**
+     * 영화 조회 서비스
+     *
+     * @param movieTitle 조회할 영화 제목
+     * @return 조회된 영화 dto
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#movieTitle", value = CacheName.MOVIE_CACHE_NAME)
+    public MovieServiceDto verifyMovie(String movieTitle) {
+
+        Movie movie = movieRepository.findByTitleAndDeleteDateIsNull(movieTitle)
+            .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
+
+        return movie.toServiceDto();
+    }
+
     /**
      * 장르 엔티티 저장하고 영화-장르 중간 엔티티 반환
      *
