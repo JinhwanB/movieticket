@@ -29,6 +29,9 @@ public class Movie extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
+    private String posterName; // 포스터 이미지 파일 이름
+
+    @Column(nullable = false)
     private String posterUrl; // 포스터 이미지 링크
 
     @Column(nullable = false)
