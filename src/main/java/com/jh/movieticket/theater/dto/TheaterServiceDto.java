@@ -55,6 +55,7 @@ public class TheaterServiceDto implements Serializable {
     public TheaterVerifyDto.Response toVerifyResponse(){
 
         return TheaterVerifyDto.Response.builder()
+            .id(id)
             .name(name)
             .seatCnt(seatCnt)
             .build();

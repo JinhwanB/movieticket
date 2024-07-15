@@ -9,7 +9,9 @@ import com.jh.movieticket.theater.dto.TheaterVerifyDto.Response;
 import com.jh.movieticket.theater.service.TheaterService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -74,15 +76,14 @@ public class TheaterController {
     /**
      * 상영관 삭제 컨트롤러
      *
-     * @param theaterName 삭제할 상영관 이름
+     * @param id 삭제할 상영관 pk
      * @return 성공 시 200 코드, 실패 시 에러코드와 에러메시지
      */
-    @DeleteMapping("/theater/{theaterName}")
+    @DeleteMapping("/theater/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalApiResponse<?>> deleteOfTheater(
-        @NotBlank(message = "삭제할 상영관 이름을 입력해주세요.") @Pattern(regexp = "^[1-9][0-9]?관$", message = "올바른 상영관 이름으로 입력해주세요. (ex. 1관, 2관, 10관)") @PathVariable String theaterName) {
+    public ResponseEntity<GlobalApiResponse<?>> deleteOfTheater(@NotNull(message = "pk는 null일 수 없습니다.") @Positive(message = "pk값은 0 또는 음수일 수 없습니다.") @PathVariable Long id) {
 
-        theaterService.deleteTheater(theaterName);
+        theaterService.deleteTheater(id);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
     }

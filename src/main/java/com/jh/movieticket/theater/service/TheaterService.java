@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -32,6 +34,7 @@ public class TheaterService {
 
     private final TheaterRepository theaterRepository;
     private final MovieScheduleRepository movieScheduleRepository;
+    private final CacheManager redisCacheManager;
 
     /**
      * 상영관을 생성하고 좌석도 함께 생성한다.
@@ -107,12 +110,11 @@ public class TheaterService {
     /**
      * 상영관 삭제 서비스
      *
-     * @param name 삭제할 상영관 이름
+     * @param id 삭제할 상영관 pk
      */
-    @CacheEvict(key = "#name", value = CacheName.THEATER_CACHE_NAME)
-    public void deleteTheater(String name) {
+    public void deleteTheater(Long id) {
 
-        Theater theater = theaterRepository.findByNameAndDeleteDate(name, null)
+        Theater theater = theaterRepository.findByIdAndDeleteDateIsNull(id)
             .orElseThrow(() -> new TheaterException(TheaterErrorCode.NOT_FOUND_THEATER));
 
         List<MovieSchedule> movieScheduleList = movieScheduleRepository.findByTheaterId(
@@ -120,6 +122,11 @@ public class TheaterService {
 
         if (!movieScheduleList.isEmpty()) { // 영화 스케줄이 존재하는 경우
             throw new TheaterException(TheaterErrorCode.EXIST_SCHEDULE);
+        }
+
+        Cache cache = redisCacheManager.getCache(CacheName.THEATER_CACHE_NAME);
+        if(cache != null){
+            cache.evict(theater.getName()); // 캐시 제거
         }
 
         Theater deletedTheater = theater.toBuilder()

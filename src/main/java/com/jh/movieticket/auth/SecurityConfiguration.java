@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/members").authenticated()
                     .requestMatchers(HttpMethod.POST, "/theaters/theater").authenticated()
                     .requestMatchers(HttpMethod.PUT, "/theaters/theater").authenticated()
-                    .requestMatchers("/theaters/theater/{theaterName}").authenticated()
+                    .requestMatchers("/theaters/theater/{id}").authenticated()
                     .anyRequest().permitAll()
             )
             .exceptionHandling(exception ->

@@ -15,6 +15,7 @@ public class TheaterVerifyDto {
     @Builder(toBuilder = true)
     public static class Response{
 
+        private Long id; // pk
         private String name; // 상영관 이름
         private int seatCnt; // 총 좌석 수
     }
