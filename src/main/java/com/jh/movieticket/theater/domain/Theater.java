@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,12 @@ public class Theater extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
+
+    public void addSeat(Seat seat){
+
+        seatList = seatList == null ? new ArrayList<>() : seatList;
+        seatList.add(seat);
+    }
 
     // Entity -> ServiceDto
     public TheaterServiceDto toServiceDto(){
