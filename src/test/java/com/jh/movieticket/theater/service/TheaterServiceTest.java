@@ -67,16 +67,12 @@ class TheaterServiceTest {
     @DisplayName("상영관 생성 서비스")
     void createTheater() {
 
-        Theater save = Theater.builder()
-            .name("test")
-            .build();
         Theater theater = Theater.builder()
             .name("test")
             .seatList(new ArrayList<>())
             .build();
 
         when(theaterRepository.existsByNameAndDeleteDate(any(), any())).thenReturn(false);
-        when(theaterRepository.save(any())).thenReturn(save);
         when(theaterRepository.save(any())).thenReturn(theater);
 
         TheaterServiceDto createdTheater = theaterService.createTheater(createRequest);
