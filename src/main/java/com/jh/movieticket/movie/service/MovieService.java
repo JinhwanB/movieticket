@@ -26,15 +26,18 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final ActorRepository actorRepository;
     private final GenreRepository genreRepository;
+    private final PosterService posterService;
 
     /**
      * 영화 생성 서비스
      *
-     * @param imageUrl      영화 포스터 링크
+     * @param multipartFile 포스터 이미지 파일
      * @param createRequest 영화 생성 정보 dto
      * @return 생성된 영화 서비스 dto
      */
-    public MovieServiceDto createMovie(String imageName, String imageUrl, MovieCreateDto.Request createRequest) {
+    public MovieServiceDto createMovie(MultipartFile multipartFile, MovieCreateDto.Request createRequest) {
+
+        Map<String, String> uploadResult = posterService.upload(multipartFile); // 이미지 업로드
 
         String title = createRequest.getTitle();
 
@@ -46,8 +49,8 @@ public class MovieService {
             createRequest.getReleaseMonth(), createRequest.getReleaseDay());
 
         Movie movie = Movie.builder()
-            .posterName(imageName)
-            .posterUrl(imageUrl)
+            .posterName(uploadResult.get("imageName"))
+            .posterUrl(uploadResult.get("imageUrl"))
             .title(title)
             .director(createRequest.getDirector())
             .description(createRequest.getDescription())
