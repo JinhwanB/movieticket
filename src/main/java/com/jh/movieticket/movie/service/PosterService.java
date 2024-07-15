@@ -8,6 +8,8 @@ import com.jh.movieticket.movie.exception.PosterException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,7 @@ public class PosterService {
      * @param image 저장할 이미지
      * @return s3에 저장된 이미지 링크
      */
-    public String upload(MultipartFile image) {
+    public Map<String, String> upload(MultipartFile image) {
         File uploadFile = convertToFile(image)
             .orElseThrow(() -> new PosterException(PosterErrorCode.FAIL_CONVERT_TO_FILE));
 
@@ -43,7 +45,11 @@ public class PosterService {
             log.info("로컬에 저장한 이미지를 삭제 실패했습니다. 이미지 이름 : {}", uploadFile.getName());
         }
 
-        return imageUrl;
+        Map<String, String> result = new HashMap<>();
+        result.put(imageName, imageName);
+        result.put(imageUrl, imageUrl);
+
+        return result;
     }
 
     /**
