@@ -28,6 +28,9 @@ public class MovieService {
     private final GenreRepository genreRepository;
     private final PosterService posterService;
 
+    private final String IMAGE_NAME_KEY = "imageName";
+    private final String IMAGE_URL_KEY = "imageUrl";
+
     /**
      * 영화 생성 서비스
      *
@@ -49,8 +52,8 @@ public class MovieService {
             createRequest.getReleaseMonth(), createRequest.getReleaseDay());
 
         Movie movie = Movie.builder()
-            .posterName(uploadResult.get("imageName"))
-            .posterUrl(uploadResult.get("imageUrl"))
+            .posterName(uploadResult.get(IMAGE_NAME_KEY))
+            .posterUrl(uploadResult.get(IMAGE_URL_KEY))
             .title(title)
             .director(createRequest.getDirector())
             .description(createRequest.getDescription())
