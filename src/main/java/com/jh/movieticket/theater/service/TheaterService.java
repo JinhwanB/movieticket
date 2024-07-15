@@ -1,7 +1,6 @@
 package com.jh.movieticket.theater.service;
 
 import com.jh.movieticket.config.CacheName;
-import com.jh.movieticket.movie.domain.MovieSchedule;
 import com.jh.movieticket.movie.repository.MovieScheduleRepository;
 import com.jh.movieticket.theater.domain.Seat;
 import com.jh.movieticket.theater.domain.Theater;
@@ -117,10 +116,7 @@ public class TheaterService {
         Theater theater = theaterRepository.findByIdAndDeleteDateIsNull(id)
             .orElseThrow(() -> new TheaterException(TheaterErrorCode.NOT_FOUND_THEATER));
 
-        List<MovieSchedule> movieScheduleList = movieScheduleRepository.findByTheaterId(
-            theater.getId());
-
-        if (!movieScheduleList.isEmpty()) { // 영화 스케줄이 존재하는 경우
+        if (movieScheduleRepository.existsByTheater(theater)) { // 영화 스케줄이 존재하는 경우
             throw new TheaterException(TheaterErrorCode.EXIST_SCHEDULE);
         }
 
