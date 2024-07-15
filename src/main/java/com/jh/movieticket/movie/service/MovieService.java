@@ -1,11 +1,13 @@
 package com.jh.movieticket.movie.service;
 
+import com.jh.movieticket.config.CacheName;
 import com.jh.movieticket.movie.domain.Actor;
 import com.jh.movieticket.movie.domain.Genre;
 import com.jh.movieticket.movie.domain.Movie;
 import com.jh.movieticket.movie.domain.MovieActor;
 import com.jh.movieticket.movie.domain.MovieGenre;
 import com.jh.movieticket.movie.dto.MovieCreateDto;
+import com.jh.movieticket.movie.dto.MovieModifyDto;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.exception.MovieErrorCode;
 import com.jh.movieticket.movie.exception.MovieException;
@@ -14,9 +16,13 @@ import com.jh.movieticket.movie.repository.GenreRepository;
 import com.jh.movieticket.movie.repository.MovieRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -38,7 +44,8 @@ public class MovieService {
      * @param createRequest 영화 생성 정보 dto
      * @return 생성된 영화 서비스 dto
      */
-    public MovieServiceDto createMovie(MultipartFile multipartFile, MovieCreateDto.Request createRequest) {
+    public MovieServiceDto createMovie(MultipartFile multipartFile,
+        MovieCreateDto.Request createRequest) {
 
         Map<String, String> uploadResult = posterService.upload(multipartFile); // 이미지 업로드
 
@@ -78,6 +85,59 @@ public class MovieService {
         Movie finSave = movieRepository.save(movieWithActorAndGenre);
 
         return finSave.toServiceDto();
+    }
+
+    /**
+     * 영화 수정 서비스
+     *
+     * @param multipartFile 수정할 이미지
+     * @param modifyRequest 수정할 영화 정보
+     * @return 수정된 영화 dto
+     */
+    @CacheEvict(key = "#modifyRequest.originMovieTitle", value = CacheName.MOVIE_CACHE_NAME)
+    @CachePut(key = "#modifyRequest.title", value = CacheName.MOVIE_CACHE_NAME)
+    public MovieServiceDto updateMovie(MultipartFile multipartFile,
+        MovieModifyDto.Request modifyRequest) {
+
+        Map<String, String> uploadResult = posterService.upload(multipartFile);
+
+        String originMovieTitle = modifyRequest.getOriginMovieTitle();
+        Movie originMovie = movieRepository.findByTitleAndDeleteDateIsNull(originMovieTitle)
+            .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
+        if (!originMovie.getTitle().equals(modifyRequest.getTitle())
+            && movieRepository.existsByTitleAndDeleteDateIsNull(
+            modifyRequest.getTitle())) { // 영화 제목을 변경하고자 하며 변경할 제목이 이미 존재하는 경우
+            throw new MovieException(MovieErrorCode.EXIST_MOVIE_TITLE);
+        }
+
+        posterService.deleteImage(originMovie.getPosterName()); // s3에 저장된 이미지 제거
+
+        LocalDate releaseDate = convertToLocalDate(modifyRequest.getReleaseYear(),
+            modifyRequest.getReleaseMonth(), modifyRequest.getReleaseDay());
+
+        Movie changedMovie = originMovie.toBuilder()
+            .posterName(uploadResult.get(IMAGE_NAME_KEY))
+            .posterUrl(uploadResult.get(IMAGE_URL_KEY))
+            .title(modifyRequest.getTitle())
+            .director(modifyRequest.getDirector())
+            .description(modifyRequest.getDescription())
+            .totalShowTime(modifyRequest.getTotalShowTime())
+            .releaseDate(releaseDate)
+            .screenType(modifyRequest.getScreenType())
+            .build();
+
+        List<MovieActor> movieActorList = getMovieActorList(changedMovie,
+            modifyRequest.getActorList());
+        List<MovieGenre> movieGenreList = getMovieGenreList(changedMovie,
+            modifyRequest.getGenreList());
+
+        Movie changedMovieWithActorAndGenre = changedMovie.toBuilder()
+            .movieActorList(movieActorList)
+            .movieGenreList(movieGenreList)
+            .build();
+        Movie modifiedMovie = movieRepository.save(changedMovieWithActorAndGenre);
+
+        return modifiedMovie.toServiceDto();
     }
 
     /**
