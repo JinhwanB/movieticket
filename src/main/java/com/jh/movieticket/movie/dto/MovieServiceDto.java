@@ -1,6 +1,7 @@
 package com.jh.movieticket.movie.dto;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,79 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
     private double reservationRate; // 예매율
     private long totalAudienceCnt; // 누적 관객 수
     private String screenType; // 상영 타입
+
+    /**
+     * ServiceDto -> CreateResponse
+     *
+     * @return CreateResponse
+     */
+    public MovieCreateDto.Response toCreateResponse() {
+
+        return MovieCreateDto.Response.builder()
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseYear(releaseDate.getYear())
+            .releaseMonth(releaseDate.getMonthValue())
+            .releaseDay(releaseDate.getDayOfMonth())
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType)
+            .build();
+    }
+
+    /**
+     * ServiceDto -> ModifyResponse
+     *
+     * @return ModifyResponse
+     */
+    public MovieModifyDto.Response toModifyResponse() {
+
+        return MovieModifyDto.Response.builder()
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseYear(releaseDate.getYear())
+            .releaseMonth(releaseDate.getMonthValue())
+            .releaseDay(releaseDate.getDayOfMonth())
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType)
+            .build();
+    }
+
+    /**
+     * ServiceDto -> VerifyDto
+     *
+     * @return VerifyDto
+     */
+    public MovieVerifyDto.Response toVerifyResponse() {
+
+        return MovieVerifyDto.Response.builder()
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseYear(releaseDate.getYear())
+            .releaseMonth(releaseDate.getMonthValue())
+            .releaseDay(releaseDate.getDayOfMonth())
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType)
+            .build();
+    }
 }
