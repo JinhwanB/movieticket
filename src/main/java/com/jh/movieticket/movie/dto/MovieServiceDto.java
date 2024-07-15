@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class MovieServiceDto implements Serializable { // 영화 서비스 레이어에서 사용할 dto
 
+    private String posterName; // 포스터 이미지 파일 이름
     private String posterUrl; // 포스터 이미지 링크
     private String title; // 영화 제목
     private String director; // 감독
@@ -21,7 +22,7 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
     private List<String> genreList; // 장르
     private String description; // 영화에 대한 설명
     private String totalShowTime; // 총 상영 시간
-    private String releaseDate; // 개봉 날짜
+    private LocalDate releaseDate; // 개봉 날짜
     private double gradeAvg; // 평균 평점
     private double reservationRate; // 예매율
     private long totalAudienceCnt; // 누적 관객 수
