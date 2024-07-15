@@ -1,13 +1,17 @@
 package com.jh.movieticket.movie.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
+import com.jh.movieticket.movie.dto.MovieServiceDto;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -39,6 +44,14 @@ public class Movie extends BaseTimeEntity {
 
     @Column(nullable = false)
     private String director; // 감독
+
+    @BatchSize(size = 100)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovieActor> movieActorList; // 배우
+
+    @BatchSize(size = 100)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovieGenre> movieGenreList; // 장르
 
     @Column(nullable = false, length = 5000)
     private String description; // 영화에 대한 설명
@@ -83,6 +96,7 @@ public class Movie extends BaseTimeEntity {
                 .toList();
 
         return MovieServiceDto.builder()
+            .posterName(posterName)
             .posterUrl(posterUrl)
             .title(title)
             .director(director)
@@ -90,8 +104,7 @@ public class Movie extends BaseTimeEntity {
             .genreList(genreList)
             .description(description)
             .totalShowTime(totalShowTime)
-            .releaseDate(releaseDate.getYear() + "년 " + releaseDate.getMonthValue() + "월 "
-                + releaseDate.getDayOfMonth() + "일")
+            .releaseDate(releaseDate)
             .gradeAvg(gradeAvg)
             .reservationRate(reservationRate)
             .totalAudienceCnt(totalAudienceCnt)
