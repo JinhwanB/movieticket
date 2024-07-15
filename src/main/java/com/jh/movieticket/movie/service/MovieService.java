@@ -34,7 +34,7 @@ public class MovieService {
      * @param createRequest 영화 생성 정보 dto
      * @return 생성된 영화 서비스 dto
      */
-    public MovieServiceDto createMovie(String imageUrl, MovieCreateDto.Request createRequest) {
+    public MovieServiceDto createMovie(String imageName, String imageUrl, MovieCreateDto.Request createRequest) {
 
         String title = createRequest.getTitle();
 
@@ -46,6 +46,7 @@ public class MovieService {
             createRequest.getReleaseMonth(), createRequest.getReleaseDay());
 
         Movie movie = Movie.builder()
+            .posterName(imageName)
             .posterUrl(imageUrl)
             .title(title)
             .director(createRequest.getDirector())
