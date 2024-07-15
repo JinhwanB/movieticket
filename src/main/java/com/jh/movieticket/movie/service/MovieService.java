@@ -15,6 +15,7 @@ import com.jh.movieticket.movie.repository.ActorRepository;
 import com.jh.movieticket.movie.repository.GenreRepository;
 import com.jh.movieticket.movie.repository.MovieRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -140,6 +141,24 @@ public class MovieService {
         return modifiedMovie.toServiceDto();
     }
 
+    /**
+     * 영화 삭제 서비스
+     *
+     * @param movieTitle 삭제할 영화 제목
+     */
+    @CacheEvict(key = "#movieTitle", value = CacheName.MOVIE_CACHE_NAME)
+    public void deleteMovie(String movieTitle) {
+
+        Movie movie = movieRepository.findByTitleAndDeleteDateIsNull(movieTitle)
+            .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
+
+        Movie deletedMovie = movie.toBuilder()
+            .deleteDate(LocalDateTime.now())
+            .movieActorList(null)
+            .movieGenreList(null)
+            .build();
+        movieRepository.save(deletedMovie);
+    }
     /**
      * 장르 엔티티 저장하고 영화-장르 중간 엔티티 반환
      *
