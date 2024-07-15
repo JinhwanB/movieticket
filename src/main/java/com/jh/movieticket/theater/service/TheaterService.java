@@ -55,24 +55,19 @@ public class TheaterService {
             .name(name)
             .build();
 
-        Theater save = theaterRepository.save(theater);
-
         // 좌석 함께 저장
         List<Seat> seatList = new ArrayList<>();
         IntStream.range(1, seatCnt + 1)
             .forEach(i -> {
                 Seat seat = Seat.builder()
                     .seatNo(i)
-                    .theater(save)
+                    .theater(theater)
                     .build();
                 seatList.add(seat);
             });
+        seatList.forEach(theater::addSeat);
 
-        Theater theaterWithSeat = save.toBuilder()
-            .seatList(seatList)
-            .build();
-
-        Theater savedTheater = theaterRepository.save(theaterWithSeat);
+        Theater savedTheater = theaterRepository.save(theater);
 
         return savedTheater.toServiceDto();
     }
