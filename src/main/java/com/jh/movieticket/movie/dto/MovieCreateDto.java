@@ -77,6 +77,6 @@ public class MovieCreateDto {
         private double gradeAvg; // 평균 평점
         private double reservationRate; // 예매율
         private long totalAudienceCnt; // 누적 관객 수
-        private String screenType; // 상영 타입
+        private ScreenType screenType; // 상영 타입
     }
 }

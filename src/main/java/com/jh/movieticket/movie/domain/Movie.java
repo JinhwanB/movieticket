@@ -130,7 +130,7 @@ public class Movie extends BaseTimeEntity {
             .gradeAvg(gradeAvg)
             .reservationRate(reservationRate)
             .totalAudienceCnt(totalAudienceCnt)
-            .screenType(screenType.getDescription())
+            .screenType(screenType)
             .build();
     }
 }
