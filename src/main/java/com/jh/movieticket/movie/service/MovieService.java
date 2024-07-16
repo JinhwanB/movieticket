@@ -73,12 +73,9 @@ public class MovieService {
             .totalAudienceCnt(0)
             .screenType(createRequest.getScreenType())
             .build();
-        List<MovieActor> movieActorList = getMovieActorList(movie,
-            createRequest.getActorList());
-        List<MovieGenre> movieGenreList = getMovieGenreList(movie,
-            createRequest.getGenreList());
-        movieActorList.forEach(movie::addMovieActor);
-        movieGenreList.forEach(movie::addMovieGenre);
+
+        addMovieActorList(movie, createRequest.getActorList());
+        addMovieGenreList(movie, createRequest.getGenreList());
 
         Movie finSave = movieRepository.save(movie);
 
@@ -124,12 +121,8 @@ public class MovieService {
             .screenType(modifyRequest.getScreenType())
             .build();
 
-        List<MovieActor> movieActorList = getMovieActorList(changedMovie,
-            modifyRequest.getActorList());
-        List<MovieGenre> movieGenreList = getMovieGenreList(changedMovie,
-            modifyRequest.getGenreList());
-        movieActorList.forEach(changedMovie::addMovieActor);
-        movieGenreList.forEach(changedMovie::addMovieGenre);
+        addMovieActorList(changedMovie, modifyRequest.getActorList());
+        addMovieGenreList(changedMovie, modifyRequest.getGenreList());
 
         Movie modifiedMovie = movieRepository.save(changedMovie);
 
@@ -147,7 +140,7 @@ public class MovieService {
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
 
         Cache cache = redisCacheManager.getCache(CacheName.MOVIE_CACHE_NAME);
-        if(cache != null){
+        if (cache != null) {
             cache.evict(movie.getTitle()); // redis 캐시 삭제
         }
 
@@ -176,49 +169,47 @@ public class MovieService {
     }
 
     /**
-     * 장르 엔티티 저장하고 영화-장르 중간 엔티티 반환
+     * 영화-장르 엔티티 연관관계 설정
      *
      * @param movie         영화
      * @param genreNameList 장르 이름 리스트
-     * @return 영화-장르 중간 엔티티 리스트
      */
-    private List<MovieGenre> getMovieGenreList(Movie movie, List<String> genreNameList) {
+    private void addMovieGenreList(Movie movie, List<String> genreNameList) {
 
-        List<Genre> genreList = genreNameList.stream()
-            .map(g -> Genre.builder()
-                .name(g)
-                .build())
-            .toList();
+        genreNameList.stream()
+            .map(g -> {
+                Genre genre = Genre.builder()
+                    .name(g)
+                    .build();
 
-        return genreList.stream()
-            .map(g -> MovieGenre.builder()
-                .genre(g)
-                .movie(movie)
-                .build())
-            .toList();
+                return MovieGenre.builder()
+                    .genre(genre)
+                    .movie(movie)
+                    .build();
+            })
+            .forEach(movie::addMovieGenre);
     }
 
     /**
-     * 배우 엔티티 저장하고 영화-배우 중간 엔티티 반환
+     * 영화-배우 엔티티 연관관계 설정
      *
      * @param movie         영화
      * @param actorNameList 배우 이름 리스트
-     * @return 영화-배우 중간 엔티티 리스트
      */
-    private List<MovieActor> getMovieActorList(Movie movie, List<String> actorNameList) {
+    private void addMovieActorList(Movie movie, List<String> actorNameList) {
 
-        List<Actor> actorList = actorNameList.stream()
-            .map(a -> Actor.builder()
-                .name(a)
-                .build())
-            .toList();
+        actorNameList.stream()
+            .map(a -> {
+                Actor actor = Actor.builder()
+                    .name(a)
+                    .build();
 
-        return actorList.stream()
-            .map(a -> MovieActor.builder()
-                .actor(a)
-                .movie(movie)
-                .build())
-            .toList();
+                return MovieActor.builder()
+                    .actor(actor)
+                    .movie(movie)
+                    .build();
+            })
+            .forEach(movie::addMovieActor);
     }
 
     /**
