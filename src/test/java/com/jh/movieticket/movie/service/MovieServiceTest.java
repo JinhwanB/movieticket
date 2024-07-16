@@ -25,6 +25,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -43,10 +44,13 @@ class MovieServiceTest {
     @MockBean
     PosterService posterService;
 
+    @MockBean
+    CacheManager redisCacheManager;
+
     @BeforeEach
     void before() {
 
-        movieService = new MovieService(movieRepository, posterService);
+        movieService = new MovieService(movieRepository, posterService, redisCacheManager);
 
         List<String> genreList = List.of("genre1", "genre2");
         List<String> actorList = List.of("actor1", "actor2");
