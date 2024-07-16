@@ -145,12 +145,11 @@ public class MovieService {
     /**
      * 영화 삭제 서비스
      *
-     * @param movieTitle 삭제할 영화 제목
+     * @param id 삭제할 영화 pk
      */
-    @CacheEvict(key = "#movieTitle", value = CacheName.MOVIE_CACHE_NAME)
-    public void deleteMovie(String movieTitle) {
+    public void deleteMovie(Long id) {
 
-        Movie movie = movieRepository.findByTitleAndDeleteDateIsNull(movieTitle)
+        Movie movie = movieRepository.findByIdAndDeleteDateIsNull(id)
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
 
         Movie deletedMovie = movie.toBuilder()
