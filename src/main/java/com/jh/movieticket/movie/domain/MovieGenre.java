@@ -1,6 +1,7 @@
 package com.jh.movieticket.movie.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,7 +33,7 @@ public class MovieGenre extends BaseTimeEntity {
     @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie; // 영화
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre; // 장르
 
