@@ -46,8 +46,8 @@ public class PosterService {
         }
 
         Map<String, String> result = new HashMap<>();
-        result.put(imageName, imageName);
-        result.put(imageUrl, imageUrl);
+        result.put("imageName", imageName);
+        result.put("imageUrl", imageUrl);
 
         return result;
     }
