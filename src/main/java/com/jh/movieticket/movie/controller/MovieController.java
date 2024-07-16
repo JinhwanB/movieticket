@@ -8,6 +8,8 @@ import com.jh.movieticket.movie.dto.MovieVerifyDto;
 import com.jh.movieticket.movie.service.MovieService;
 import com.jh.movieticket.validation.IsImage;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,7 +80,7 @@ public class MovieController {
      */
     @DeleteMapping("/movie/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalApiResponse<?>> movieDeleteController(@PathVariable Long id) {
+    public ResponseEntity<GlobalApiResponse<?>> movieDeleteController(@Positive(message = "pk값은 0 또는 음수일 수 없습니다.") @PathVariable Long id) {
 
         movieService.deleteMovie(id);
 
@@ -93,7 +95,7 @@ public class MovieController {
      */
     @GetMapping("/movie/{movieTitle}")
     public ResponseEntity<GlobalApiResponse<MovieVerifyDto.Response>> movieVerifyController(
-        @PathVariable String movieTitle) {
+        @NotBlank(message = "조회할 영화 제목을 입력해주세요.") @PathVariable String movieTitle) {
 
         MovieServiceDto serviceDto = movieService.verifyMovie(movieTitle);
 
