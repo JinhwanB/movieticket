@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,6 +37,7 @@ public class MovieService {
     private final ActorRepository actorRepository;
     private final GenreRepository genreRepository;
     private final PosterService posterService;
+    private final CacheManager redisCacheManager;
 
     private final String IMAGE_NAME_KEY = "imageName";
     private final String IMAGE_URL_KEY = "imageUrl";
@@ -151,6 +154,11 @@ public class MovieService {
 
         Movie movie = movieRepository.findByIdAndDeleteDateIsNull(id)
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
+
+        Cache cache = redisCacheManager.getCache(CacheName.MOVIE_CACHE_NAME);
+        if(cache != null){
+            cache.evict(movie.getTitle()); // redis 캐시 삭제
+        }
 
         Movie deletedMovie = movie.toBuilder()
             .deleteDate(LocalDateTime.now())
