@@ -17,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -83,6 +84,15 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.badRequest().body(list);
+    }
+
+    // 필수 PathVariable 값 존재하지 않을 경우 에러 핸들러
+    @ExceptionHandler(MissingPathVariableException.class)
+    private ResponseEntity<GlobalApiResponse<String>> handleMissingPathVariableException(MissingPathVariableException e){
+
+        log.error("필수 PathVariable 값 존재하지 않음 exception = {}", e.getMessage());
+
+        return ResponseEntity.badRequest().body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, "PathVariable 값은 필수값입니다."));
     }
 
     // 회원 관련 에러 핸들러 -> 400 에러
