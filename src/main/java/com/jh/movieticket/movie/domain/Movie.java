@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -77,6 +78,26 @@ public class Movie extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
+
+    /**
+     * 연관관계 저장용 메소드
+     * @param movieActor
+     */
+    public void addMovieActor(MovieActor movieActor){
+
+        movieActorList = new ArrayList<>();
+        movieActorList.add(movieActor);
+    }
+
+    /**
+     * 연관관계 저장용 메소드
+     * @param movieGenre
+     */
+    public void addMovieGenre(MovieGenre movieGenre){
+
+        movieGenreList = new ArrayList<>();
+        movieGenreList.add(movieGenre);
+    }
 
     /**
      * Entity -> ServiceDto
