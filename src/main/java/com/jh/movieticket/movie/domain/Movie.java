@@ -96,6 +96,7 @@ public class Movie extends BaseTimeEntity {
                 .toList();
 
         return MovieServiceDto.builder()
+            .id(id)
             .posterName(posterName)
             .posterUrl(posterUrl)
             .title(title)

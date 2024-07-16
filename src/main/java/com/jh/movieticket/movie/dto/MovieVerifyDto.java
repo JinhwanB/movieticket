@@ -16,6 +16,7 @@ public class MovieVerifyDto {
     @Builder(toBuilder = true)
     public static class Response {
 
+        private Long id; // pk
         private String posterUrl; // 영화 포스터 링크
         private String title; // 영화 제목
         private String director; // 감독

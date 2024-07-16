@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class MovieServiceDto implements Serializable { // 영화 서비스 레이어에서 사용할 dto
 
+    private Long id; // pk
     private String posterName; // 포스터 이미지 파일 이름
     private String posterUrl; // 포스터 이미지 링크
     private String title; // 영화 제목
@@ -87,6 +88,7 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
     public MovieVerifyDto.Response toVerifyResponse() {
 
         return MovieVerifyDto.Response.builder()
+            .id(id)
             .posterUrl(posterUrl)
             .title(title)
             .director(director)
