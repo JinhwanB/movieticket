@@ -11,8 +11,6 @@ import com.jh.movieticket.movie.dto.MovieModifyDto;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.exception.MovieErrorCode;
 import com.jh.movieticket.movie.exception.MovieException;
-import com.jh.movieticket.movie.repository.ActorRepository;
-import com.jh.movieticket.movie.repository.GenreRepository;
 import com.jh.movieticket.movie.repository.MovieRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,8 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MovieService {
 
     private final MovieRepository movieRepository;
-    private final ActorRepository actorRepository;
-    private final GenreRepository genreRepository;
     private final PosterService posterService;
     private final CacheManager redisCacheManager;
 
@@ -76,18 +72,14 @@ public class MovieService {
             .totalAudienceCnt(0)
             .screenType(createRequest.getScreenType())
             .build();
-        Movie savedMovie = movieRepository.save(movie);
-
-        List<MovieActor> movieActorList = getMovieActorList(savedMovie,
+        List<MovieActor> movieActorList = getMovieActorList(movie,
             createRequest.getActorList());
-        List<MovieGenre> movieGenreList = getMovieGenreList(savedMovie,
+        List<MovieGenre> movieGenreList = getMovieGenreList(movie,
             createRequest.getGenreList());
+        movieActorList.forEach(movie::addMovieActor);
+        movieGenreList.forEach(movie::addMovieGenre);
 
-        Movie movieWithActorAndGenre = savedMovie.toBuilder()
-            .movieActorList(movieActorList)
-            .movieGenreList(movieGenreList)
-            .build();
-        Movie finSave = movieRepository.save(movieWithActorAndGenre);
+        Movie finSave = movieRepository.save(movie);
 
         return finSave.toServiceDto();
     }
@@ -135,12 +127,10 @@ public class MovieService {
             modifyRequest.getActorList());
         List<MovieGenre> movieGenreList = getMovieGenreList(changedMovie,
             modifyRequest.getGenreList());
+        movieActorList.forEach(changedMovie::addMovieActor);
+        movieGenreList.forEach(changedMovie::addMovieGenre);
 
-        Movie changedMovieWithActorAndGenre = changedMovie.toBuilder()
-            .movieActorList(movieActorList)
-            .movieGenreList(movieGenreList)
-            .build();
-        Movie modifiedMovie = movieRepository.save(changedMovieWithActorAndGenre);
+        Movie modifiedMovie = movieRepository.save(changedMovie);
 
         return modifiedMovie.toServiceDto();
     }
@@ -199,9 +189,7 @@ public class MovieService {
                 .build())
             .toList();
 
-        List<Genre> genres = genreRepository.saveAll(genreList);
-
-        return genres.stream()
+        return genreList.stream()
             .map(g -> MovieGenre.builder()
                 .genre(g)
                 .movie(movie)
@@ -224,9 +212,7 @@ public class MovieService {
                 .build())
             .toList();
 
-        List<Actor> actors = actorRepository.saveAll(actorList);
-
-        return actors.stream()
+        return actorList.stream()
             .map(a -> MovieActor.builder()
                 .actor(a)
                 .movie(movie)
