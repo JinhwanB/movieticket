@@ -8,9 +8,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
-    Optional<Movie> findByIdAndDeleteDateIsNull(Long id); // 삭제되지 않은 데이터 중 pk로 조회
 
-    Optional<Movie> findByTitleAndDeleteDateIsNull(String title); // 삭제되지 않은 데이터 중 이름으로 조회
+    Optional<Movie> findByTitle(String title); // 영화 제목으로 조회
 
-    boolean existsByTitleAndDeleteDateIsNull(String title); // 중복 이름인지 확인
+    boolean existsByTitle(String title); // 중복 이름인지 확인
 }

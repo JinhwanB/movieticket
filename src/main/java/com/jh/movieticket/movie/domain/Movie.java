@@ -22,12 +22,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
+@SQLRestriction("deletedDate IS NULL")
 public class Movie extends BaseTimeEntity {
 
     @Id
