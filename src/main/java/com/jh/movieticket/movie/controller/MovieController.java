@@ -41,7 +41,7 @@ public class MovieController {
     @PostMapping("/movie")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalApiResponse<MovieCreateDto.Response>> movieCreateController(
-        @IsImage @RequestPart
+        @IsImage(message = "이미지 파일이 아니거나 올바르지 않은 이미지 입니다. (허용하는 확장자 : .jpg, .jpeg, .png)") @RequestPart
         MultipartFile multipartFile, @Valid @RequestPart MovieCreateDto.Request createRequest) {
 
         MovieServiceDto movieServiceDto = movieService.createMovie(multipartFile, createRequest);
@@ -61,7 +61,7 @@ public class MovieController {
     @PutMapping("/movie")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalApiResponse<MovieModifyDto.Response>> movieUpdateController(
-        @IsImage @RequestPart MultipartFile multipartFile,
+        @IsImage(message = "이미지 파일이 아니거나 올바르지 않은 이미지 입니다. (허용하는 확장자 : .jpg, .jpeg, .png)") @RequestPart MultipartFile multipartFile,
         @Valid @RequestPart MovieModifyDto.Request modifyRequest) {
 
         MovieServiceDto serviceDto = movieService.updateMovie(multipartFile, modifyRequest);
