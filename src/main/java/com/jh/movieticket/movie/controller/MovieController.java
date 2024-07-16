@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +39,7 @@ public class MovieController {
      * @return 성공 시 201 코드와 생성된 영화 dto, 실패 시 에러코드와 에러메시지
      */
     @PostMapping("/movie")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalApiResponse<MovieCreateDto.Response>> movieCreateController(
         @IsImage @RequestPart
         MultipartFile multipartFile, @Valid @RequestPart MovieCreateDto.Request createRequest) {
@@ -57,6 +59,7 @@ public class MovieController {
      * @return 성공 시 200 코드와 수정된 영화 dto, 실패 시 에러코드와 에러메시지
      */
     @PutMapping("/movie")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalApiResponse<MovieModifyDto.Response>> movieUpdateController(
         @IsImage @RequestPart MultipartFile multipartFile,
         @Valid @RequestPart MovieModifyDto.Request modifyRequest) {
@@ -74,6 +77,7 @@ public class MovieController {
      * @return 성공 시 200 코드, 실패시 에러코드와 에러메시지
      */
     @DeleteMapping("/movie/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalApiResponse<?>> movieDeleteController(@PathVariable Long id) {
 
         movieService.deleteMovie(id);
