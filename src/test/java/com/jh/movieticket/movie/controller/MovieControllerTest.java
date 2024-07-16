@@ -20,7 +20,6 @@ import com.jh.movieticket.movie.dto.MovieModifyDto;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.service.MovieService;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
@@ -59,7 +58,7 @@ class MovieControllerTest {
     TokenProvider tokenProvider;
 
     @BeforeEach
-    void before() throws IOException {
+    void before() {
 
         mockMvc = MockMvcBuilders
             .webAppContextSetup(context)
@@ -73,7 +72,7 @@ class MovieControllerTest {
             .title("title")
             .description("description")
             .director("director")
-            .screenType("현재 상영작")
+            .screenType(ScreenType.NOW)
             .totalShowTime("100분")
             .releaseDate(LocalDate.now())
             .genreList(genreList)
