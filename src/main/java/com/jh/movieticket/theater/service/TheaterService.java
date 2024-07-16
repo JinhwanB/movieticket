@@ -56,16 +56,12 @@ public class TheaterService {
             .build();
 
         // 좌석 함께 저장
-        List<Seat> seatList = new ArrayList<>();
         IntStream.range(1, seatCnt + 1)
-            .forEach(i -> {
-                Seat seat = Seat.builder()
+            .mapToObj(i -> Seat.builder()
                     .seatNo(i)
                     .theater(theater)
-                    .build();
-                seatList.add(seat);
-            });
-        seatList.forEach(theater::addSeat);
+                    .build())
+            .forEach(theater::addSeat);
 
         Theater savedTheater = theaterRepository.save(theater);
 
