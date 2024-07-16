@@ -14,6 +14,7 @@ import com.jh.movieticket.movie.exception.MovieException;
 import com.jh.movieticket.movie.repository.MovieRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -152,8 +153,8 @@ public class MovieService {
 
         Movie deletedMovie = movie.toBuilder()
             .deleteDate(LocalDateTime.now())
-            .movieActorList(null)
-            .movieGenreList(null)
+            .movieActorList(new ArrayList<>())
+            .movieGenreList(new ArrayList<>())
             .build();
         movieRepository.save(deletedMovie);
     }
