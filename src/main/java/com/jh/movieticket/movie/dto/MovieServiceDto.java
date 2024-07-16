@@ -1,5 +1,9 @@
 package com.jh.movieticket.movie.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,7 +28,11 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
     private List<String> genreList; // 장르
     private String description; // 영화에 대한 설명
     private String totalShowTime; // 총 상영 시간
+
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonDeserialize(using = LocalDateDeserializer.class)
     private LocalDate releaseDate; // 개봉 날짜
+    
     private double gradeAvg; // 평균 평점
     private double reservationRate; // 예매율
     private long totalAudienceCnt; // 누적 관객 수
