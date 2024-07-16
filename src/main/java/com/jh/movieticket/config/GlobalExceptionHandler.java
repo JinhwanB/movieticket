@@ -3,6 +3,8 @@ package com.jh.movieticket.config;
 import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.mail.exception.MailException;
 import com.jh.movieticket.member.exception.MemberException;
+import com.jh.movieticket.movie.exception.MovieException;
+import com.jh.movieticket.movie.exception.PosterException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -112,5 +114,25 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getTokenErrorCode().getMessage()));
+    }
+
+    // 영화 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(MovieException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleMovieException(MovieException e){
+
+        log.error("영화 관련 exception = {}", e.getMovieErrorCode().getMessage());
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getMovieErrorCode().getMessage()));
+    }
+
+    // 포스터 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(PosterException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handlePosterException(PosterException e){
+
+        log.error("포스터 관련 exception = {}", e.getPosterErrorCode().getMessage());
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getPosterErrorCode().getMessage()));
     }
 }
