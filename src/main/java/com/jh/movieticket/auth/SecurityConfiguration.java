@@ -40,6 +40,9 @@ public class SecurityConfiguration {
                     .requestMatchers(HttpMethod.DELETE, "/members/member/{userId}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/members/member/{userId}").authenticated()
                     .requestMatchers("/members").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/movies/movie").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/movies/movie").authenticated()
+                    .requestMatchers("/movies/movie/{id}").authenticated()
                     .anyRequest().permitAll()
             )
             .exceptionHandling(exception ->
