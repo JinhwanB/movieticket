@@ -195,9 +195,9 @@ class MovieServiceTest {
     @DisplayName("영화 삭제 서비스")
     void movieDeleteService(){
 
-        when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.of(movie));
+        when(movieRepository.findByIdAndDeleteDateIsNull(any())).thenReturn(Optional.of(movie));
 
-        movieService.deleteMovie("title");
+        movieService.deleteMovie(any());
 
         verify(movieRepository, times(1)).save(any());
     }
@@ -206,7 +206,7 @@ class MovieServiceTest {
     @DisplayName("영화 삭제 서비스 실패 - 없는 영화")
     void movieDeleteServiceFail1(){
 
-        when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.empty());
+        when(movieRepository.findByIdAndDeleteDateIsNull(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> movieService.deleteMovie(any())).isInstanceOf(MovieException.class);
     }
