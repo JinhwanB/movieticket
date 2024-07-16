@@ -41,9 +41,13 @@ public class Theater extends BaseTimeEntity {
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
 
+    /**
+     * 연관관계 엔티티 저장 메소드
+     * @param seat 저장할 연관관계 엔티티
+     */
     public void addSeat(Seat seat){
 
-        seatList = seatList == null ? new ArrayList<>() : seatList;
+        seatList = new ArrayList<>();
         seatList.add(seat);
     }
 
