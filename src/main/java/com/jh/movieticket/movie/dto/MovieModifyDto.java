@@ -21,7 +21,7 @@ public class MovieModifyDto {
     @AllArgsConstructor
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @Builder(toBuilder = true)
-    public static class Request{
+    public static class Request {
 
         @NotBlank(message = "변경을 원하는 영화의 제목을 입력하세요.")
         private String originMovieTitle; // 변경할 영화 제목
@@ -80,6 +80,6 @@ public class MovieModifyDto {
         private double gradeAvg; // 평균 평점
         private double reservationRate; // 예매율
         private long totalAudienceCnt; // 누적 관객 수
-        private String screenType; // 상영 타입
+        private ScreenType screenType; // 상영 타입
     }
 }

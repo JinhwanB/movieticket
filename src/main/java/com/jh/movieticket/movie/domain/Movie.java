@@ -81,9 +81,10 @@ public class Movie extends BaseTimeEntity {
 
     /**
      * 연관관계 저장용 메소드
+     *
      * @param movieActor
      */
-    public void addMovieActor(MovieActor movieActor){
+    public void addMovieActor(MovieActor movieActor) {
 
         movieActorList = new ArrayList<>();
         movieActorList.add(movieActor);
@@ -91,9 +92,10 @@ public class Movie extends BaseTimeEntity {
 
     /**
      * 연관관계 저장용 메소드
+     *
      * @param movieGenre
      */
-    public void addMovieGenre(MovieGenre movieGenre){
+    public void addMovieGenre(MovieGenre movieGenre) {
 
         movieGenreList = new ArrayList<>();
         movieGenreList.add(movieGenre);
@@ -130,7 +132,7 @@ public class Movie extends BaseTimeEntity {
             .gradeAvg(gradeAvg)
             .reservationRate(reservationRate)
             .totalAudienceCnt(totalAudienceCnt)
-            .screenType(screenType.getDescription())
+            .screenType(screenType)
             .build();
     }
 }
