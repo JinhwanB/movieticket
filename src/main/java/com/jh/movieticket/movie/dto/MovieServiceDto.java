@@ -114,4 +114,30 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
             .screenType(screenType)
             .build();
     }
+
+    /**
+     * ServiceDto -> SearchDto
+     *
+     * @return SearchDto
+     */
+    public MovieSearchDto.Response toSearchResponse() {
+
+        return MovieSearchDto.Response.builder()
+            .id(id)
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseYear(releaseDate.getYear())
+            .releaseMonth(releaseDate.getMonthValue())
+            .releaseDay(releaseDate.getDayOfMonth())
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType)
+            .build();
+    }
 }
