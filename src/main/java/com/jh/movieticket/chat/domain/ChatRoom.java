@@ -1,5 +1,6 @@
 package com.jh.movieticket.chat.domain;
 
+import com.jh.movieticket.chat.dto.ChatRoomServiceDto;
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.member.domain.Member;
 import jakarta.persistence.Column;
@@ -48,4 +49,32 @@ public class ChatRoom extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제날짜
+
+    /**
+     * 채잍메시지 저장 메소드
+     *
+     * @param chatMessage 저장할 채팅 메시지
+     */
+    public void addChatMessage(ChatMessage chatMessage) {
+
+        chatMessageList = new ArrayList<>();
+        chatMessageList.add(chatMessage);
+    }
+
+    /**
+     * Entity -> ServiceDto
+     *
+     * @return ServiceDto
+     */
+    public ChatRoomServiceDto toServiceDto() {
+
+        return ChatRoomServiceDto.builder()
+            .id(id)
+            .adminId(admin.getUserId())
+            .memberId(member.getUserId())
+            .chatMessageList(
+                chatMessageList != null ? chatMessageList.stream().map(ChatMessage::toServiceDto)
+                    .toList() : new ArrayList<>())
+            .build();
+    }
 }
