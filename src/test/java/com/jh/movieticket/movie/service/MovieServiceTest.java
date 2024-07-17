@@ -11,6 +11,7 @@ import com.jh.movieticket.movie.domain.Movie;
 import com.jh.movieticket.movie.domain.ScreenType;
 import com.jh.movieticket.movie.dto.MovieCreateDto;
 import com.jh.movieticket.movie.dto.MovieModifyDto;
+import com.jh.movieticket.movie.dto.MovieSearchDto;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.exception.MovieException;
 import com.jh.movieticket.movie.exception.PosterException;
@@ -26,6 +27,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -37,6 +42,9 @@ class MovieServiceTest {
     Movie movie;
     MovieCreateDto.Request createRequest;
     MovieModifyDto.Request modifyRequest;
+    MovieSearchDto.Request searchRequest;
+    Pageable pageable;
+    Page<Movie> searchResult;
 
     @MockBean
     MovieRepository movieRepository;
@@ -59,7 +67,7 @@ class MovieServiceTest {
             .title("title")
             .description("description")
             .director("director")
-            .screenType("현재 상영작")
+            .screenType(ScreenType.NOW)
             .totalShowTime("100분")
             .releaseDate(LocalDate.now())
             .genreList(genreList)
@@ -115,11 +123,23 @@ class MovieServiceTest {
             .actorList(actorList)
             .originMovieTitle("title")
             .build();
+
+        searchRequest = MovieSearchDto.Request.builder()
+            .title("title")
+            .orderBy("reservation")
+            .genre("genre")
+            .screenType(ScreenType.NOW)
+            .build();
+
+        pageable = PageRequest.of(0, 10);
+
+        List<Movie> movieList = List.of(movie);
+        searchResult = new PageImpl<>(movieList, pageable, movieList.size());
     }
 
     @Test
     @DisplayName("영화 생성 서비스")
-    void movieCreateService(){
+    void movieCreateService() {
 
         when(posterService.upload(any())).thenReturn(uploadResult);
         when(movieRepository.existsByTitleAndDeleteDateIsNull(any())).thenReturn(false);
@@ -132,7 +152,7 @@ class MovieServiceTest {
 
     @Test
     @DisplayName("영화 생성 서비스 실패 - 포스터 업로드 실패")
-    void movieCreateServiceFail1(){
+    void movieCreateServiceFail1() {
 
         when(posterService.upload(any())).thenThrow(PosterException.class);
 
@@ -142,7 +162,7 @@ class MovieServiceTest {
 
     @Test
     @DisplayName("영화 생성 서비스 실패 - 영화 이름 중복")
-    void movieCreateServiceFail2(){
+    void movieCreateServiceFail2() {
 
         when(posterService.upload(any())).thenReturn(uploadResult);
         when(movieRepository.existsByTitleAndDeleteDateIsNull(any())).thenReturn(true);
@@ -153,7 +173,7 @@ class MovieServiceTest {
 
     @Test
     @DisplayName("영화 수정 서비스")
-    void movieModifyService(){
+    void movieModifyService() {
 
         when(posterService.upload(any())).thenReturn(uploadResult);
         when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.of(movie));
@@ -167,37 +187,40 @@ class MovieServiceTest {
 
     @Test
     @DisplayName("영화 수정 서비스 실패 - 포스터 업로드 실패")
-    void movieModifyServiceFail1(){
+    void movieModifyServiceFail1() {
 
         when(posterService.upload(any())).thenThrow(PosterException.class);
 
-        assertThatThrownBy(() -> movieService.updateMovie(any(), modifyRequest)).isInstanceOf(PosterException.class);
+        assertThatThrownBy(() -> movieService.updateMovie(any(), modifyRequest)).isInstanceOf(
+            PosterException.class);
     }
 
     @Test
     @DisplayName("영화 수정 서비스 실패 - 없는 영화")
-    void movieModifyServiceFail2(){
+    void movieModifyServiceFail2() {
 
         when(posterService.upload(any())).thenReturn(uploadResult);
         when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> movieService.updateMovie(any(), modifyRequest)).isInstanceOf(MovieException.class);
+        assertThatThrownBy(() -> movieService.updateMovie(any(), modifyRequest)).isInstanceOf(
+            MovieException.class);
     }
 
     @Test
     @DisplayName("영화 수정 서비스 실패 - 중복된 영화 이름")
-    void movieModifyServiceFail3(){
+    void movieModifyServiceFail3() {
 
         when(posterService.upload(any())).thenReturn(uploadResult);
         when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.of(movie));
         when(movieRepository.existsByTitleAndDeleteDateIsNull(any())).thenReturn(true);
 
-        assertThatThrownBy(() -> movieService.updateMovie(any(), modifyRequest)).isInstanceOf(MovieException.class);
+        assertThatThrownBy(() -> movieService.updateMovie(any(), modifyRequest)).isInstanceOf(
+            MovieException.class);
     }
 
     @Test
     @DisplayName("영화 삭제 서비스")
-    void movieDeleteService(){
+    void movieDeleteService() {
 
         when(movieRepository.findByIdAndDeleteDateIsNull(any())).thenReturn(Optional.of(movie));
 
@@ -208,16 +231,17 @@ class MovieServiceTest {
 
     @Test
     @DisplayName("영화 삭제 서비스 실패 - 없는 영화")
-    void movieDeleteServiceFail1(){
+    void movieDeleteServiceFail1() {
 
         when(movieRepository.findByIdAndDeleteDateIsNull(any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> movieService.deleteMovie(any())).isInstanceOf(MovieException.class);
+        assertThatThrownBy(() -> movieService.deleteMovie(any())).isInstanceOf(
+            MovieException.class);
     }
 
     @Test
     @DisplayName("영화 조회 서비스")
-    void movieVerifyService(){
+    void movieVerifyService() {
 
         when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.of(movie));
 
@@ -228,10 +252,22 @@ class MovieServiceTest {
 
     @Test
     @DisplayName("영화 조회 서비스 실패 - 없는 영화")
-    void movieVerifyServiceFail(){
+    void movieVerifyServiceFail() {
 
         when(movieRepository.findByTitleAndDeleteDateIsNull(any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> movieService.verifyMovie(any())).isInstanceOf(MovieException.class);
+        assertThatThrownBy(() -> movieService.verifyMovie(any())).isInstanceOf(
+            MovieException.class);
+    }
+
+    @Test
+    @DisplayName("영화 검색 서비스")
+    void movieSearchService() {
+
+        when(movieRepository.findBySearchOption(any(), any())).thenReturn(searchResult);
+
+        Page<MovieServiceDto> movieServiceDtos = movieService.searchMovie(searchRequest, pageable);
+
+        assertThat(movieServiceDtos.getTotalElements()).isEqualTo(1);
     }
 }
