@@ -185,7 +185,7 @@ public class MemberController {
 
         memberService.deleteMember(userId);
 
-        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.NO_CONTENT, null));
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
     }
 
     /**
