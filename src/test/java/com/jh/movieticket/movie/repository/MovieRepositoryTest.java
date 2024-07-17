@@ -15,10 +15,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(JpaAuditingConfig.class)
 class MovieRepositoryTest {
+
+    Pageable pageable;
 
     @Autowired
     MovieRepository movieRepository;
@@ -78,6 +83,8 @@ class MovieRepositoryTest {
             .build();
         movieRepository.save(movieWithGenre1);
         movieRepository.save(movieWithGenre2);
+
+        pageable = PageRequest.of(0, 10);
     }
 
     @Test
@@ -94,5 +101,15 @@ class MovieRepositoryTest {
     void duplicatedTitle(){
 
         assertThat(movieRepository.existsByTitleAndDeleteDateIsNull("title1")).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("동적 검색")
+    void search(){
+
+        Page<Movie> bySearchOption = movieRepository.findBySearchOption("title", null,
+            "", "", pageable);
+
+        assertThat(bySearchOption.getTotalElements()).isEqualTo(2);
     }
 }
