@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MovieRepository extends JpaRepository<Movie, Long> {
+public interface MovieRepository extends JpaRepository<Movie, Long>, MovieRepositoryCustom {
 
     Optional<Movie> findByIdAndDeleteDateIsNull(Long id); // 삭제되지 않은 데이터 중 pk로 조회
 
