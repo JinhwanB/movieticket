@@ -1,5 +1,6 @@
 package com.jh.movieticket.chat.domain;
 
+import com.jh.movieticket.chat.dto.ChatMessageServiceDto;
 import com.jh.movieticket.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,4 +41,18 @@ public class ChatMessage {
 
     @Column
     private LocalDateTime deleteDate; // 삭제날짜
+
+    /**
+     * Entity -> ServiceDto
+     *
+     * @return ServiceDto
+     */
+    public ChatMessageServiceDto toServiceDto() {
+
+        return ChatMessageServiceDto.builder()
+            .id(id)
+            .message(message)
+            .senderId(sender.getUserId())
+            .build();
+    }
 }
