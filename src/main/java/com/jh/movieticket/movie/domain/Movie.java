@@ -83,7 +83,7 @@ public class Movie extends BaseTimeEntity {
      */
     public void addMovieActor(MovieActor movieActor) {
 
-        movieActorList = new ArrayList<>();
+        movieActorList = movieActorList == null ? new ArrayList<>() : movieActorList;
         movieActorList.add(movieActor);
     }
 
@@ -94,7 +94,7 @@ public class Movie extends BaseTimeEntity {
      */
     public void addMovieGenre(MovieGenre movieGenre) {
 
-        movieGenreList = new ArrayList<>();
+        movieGenreList = movieGenreList == null ? new ArrayList<>() : movieGenreList;
         movieGenreList.add(movieGenre);
     }
 
