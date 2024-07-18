@@ -46,6 +46,7 @@ public class MovieService {
      * @param createRequest 영화 생성 정보 dto
      * @return 생성된 영화 서비스 dto
      */
+    @Cacheable(key = "#createRequest.title", value = CacheName.MOVIE_CACHE_NAME)
     public MovieServiceDto createMovie(MultipartFile multipartFile,
         MovieCreateDto.Request createRequest) {
 
