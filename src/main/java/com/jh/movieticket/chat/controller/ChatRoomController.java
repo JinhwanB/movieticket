@@ -32,6 +32,22 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     /**
+     * 채팅방 생성 컨트롤러
+     *
+     * @param createRequest 채팅방 생성 정보 dto
+     * @return 성공 시 201 코드와 생성된 채팅방 dto, 실패 시 에러코드와 에러메시지
+     */
+    @PostMapping("/chatroom")
+    public ResponseEntity<GlobalApiResponse<ChatRoomCreateDto.Response>> chatRoomCreateController(
+        @Valid @RequestBody ChatRoomCreateDto.Request createRequest) {
+
+        ChatRoomServiceDto chatRoom = chatRoomService.createChatRoom(createRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            GlobalApiResponse.toGlobalResponse(HttpStatus.CREATED, chatRoom.toCreateResponse()));
+    }
+
+    /**
      * 채팅방 삭제 컨트롤러
      *
      * @param id 삭제할 채팅방 pk
