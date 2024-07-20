@@ -27,7 +27,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final MemberRepository memberRepository;
-    private final RedisTemplate<String, ChatMessageServiceDto> ChatMessageRedisTemplate;
+    private final RedisTemplate<String, ChatMessageServiceDto> chatMessageRedisTemplate;
 
     // 채팅방에 입장하고 있는 사람이 몇 명인지 확인이 가능해야 한다.
     // 메시지를 보낼 때 두 사람 모두 입장시 0, 한 사람만 입장한 경우는 1로 해서 보낸다.
@@ -55,7 +55,7 @@ public class ChatMessageService {
             .build();
         ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
 
-        ChatMessageRedisTemplate.opsForList()
+        chatMessageRedisTemplate.opsForList()
             .rightPush(String.valueOf(chatRoom.getId()),
                 savedChatMessage.toServiceDto()); // redis 저장
     }
@@ -69,10 +69,10 @@ public class ChatMessageService {
     public List<ChatMessageServiceDto> chatMessageVerifyAll(Long chatRoomId) {
 
         String chatMessageKey = CacheName.CHAT_MESSAGE_CACHE_NAME + "::" + chatRoomId;
-        List<ChatMessageServiceDto> messageServiceDtoList = ChatMessageRedisTemplate.opsForList()
-            .range(chatMessageKey, 0, -1);
-        if (messageServiceDtoList != null) { // redis에 존재하는 경우
-            return messageServiceDtoList;
+        if (Boolean.TRUE.equals(
+            chatMessageRedisTemplate.hasKey(chatMessageKey))) { // redis에 존재하는 경우
+            return chatMessageRedisTemplate.opsForList()
+                .range(chatMessageKey, 0, -1);
         }
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
@@ -84,8 +84,10 @@ public class ChatMessageService {
             .map(ChatMessage::toServiceDto)
             .toList();
 
-        ChatMessageRedisTemplate.opsForList()
-            .rightPushAll(chatMessageKey, chatMessageServiceDtoList); // redis에 저장
+        if (!chatMessageServiceDtoList.isEmpty()) {
+            chatMessageRedisTemplate.opsForList()
+                .rightPushAll(chatMessageKey, chatMessageServiceDtoList); // redis에 저장
+        }
 
         return chatMessageServiceDtoList;
     }
