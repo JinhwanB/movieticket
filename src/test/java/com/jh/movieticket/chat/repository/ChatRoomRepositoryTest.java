@@ -61,4 +61,11 @@ class ChatRoomRepositoryTest {
 
         assertThat(chatRoom.getMember().getUserId()).isEqualTo("member");
     }
+
+    @Test
+    @DisplayName("회원을 통해 채팅방 존재 유무 확인")
+    void existByMemberEntity() {
+
+        assertThat(chatRoomRepository.existsByMember(savedMember)).isEqualTo(true);
+    }
 }
