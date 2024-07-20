@@ -14,8 +14,7 @@ public class ChatConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
 
         registry.addEndpoint("/ws/chat") // stomp 접속 주소 = ws://localhost:8080/ws/chat
-            .setAllowedOrigins("*") // 모든 origin 허용
-            .withSockJS();
+            .setAllowedOrigins("*"); // 모든 origin 허용
     }
 
     @Override
