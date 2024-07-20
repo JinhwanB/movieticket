@@ -41,6 +41,9 @@ public class ChatMessage {
     @Column(nullable = false, length = 5000)
     private String message; // 메시지 내용
 
+    @Column(nullable = false)
+    private int notReadCount; // 안 읽은 사람 수
+
     @Column
     private LocalDateTime deleteDate; // 삭제날짜
 
