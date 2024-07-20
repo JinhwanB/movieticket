@@ -16,4 +16,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     void deleteChatRoomByMember(Long parentId); // 회원 소프트딜리트로 인한 삭제 메소드
 
     Optional<ChatRoom> findByMember(Member member); // 회원을 통해 조회
+
+    boolean existsByMember(Member member); // 회원으로 채팅방 존재 유무 확인
 }
