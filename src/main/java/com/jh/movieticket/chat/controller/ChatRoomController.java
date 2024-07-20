@@ -1,6 +1,8 @@
 package com.jh.movieticket.chat.controller;
 
 import com.jh.movieticket.chat.dto.ChatRoomCreateDto;
+import com.jh.movieticket.chat.dto.ChatRoomJoinDto;
+import com.jh.movieticket.chat.dto.ChatRoomOutDto;
 import com.jh.movieticket.chat.dto.ChatRoomServiceDto;
 import com.jh.movieticket.chat.dto.ChatRoomVerifyDto;
 import com.jh.movieticket.chat.dto.ChatRoomVerifyDto.Response;
@@ -64,6 +66,28 @@ public class ChatRoomController {
         chatRoomService.deleteChatRoom(id);
 
         return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, null));
+    }
+
+    /**
+     * 채팅방 입장 컨트롤러
+     *
+     * @param joinRequest 입장 정보 dto
+     */
+    @PostMapping("/chatroom/join")
+    public void joinChatRoom(@Valid @RequestBody ChatRoomJoinDto.Request joinRequest) {
+
+        chatRoomService.enterChatRoom(joinRequest);
+    }
+
+    /**
+     * 채팅방 퇴장 컨트롤러
+     *
+     * @param outRequest 퇴장 정보 dto
+     */
+    @PostMapping("/chatroom/out/{chatRoomId}")
+    public void outChatRoom(@Valid @RequestBody ChatRoomOutDto.Request outRequest) {
+
+        chatRoomService.outChatRoom(outRequest);
     }
 
     /**
