@@ -1,5 +1,6 @@
 package com.jh.movieticket.config;
 
+import com.jh.movieticket.chat.dto.ChatMessageServiceDto;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -29,8 +30,10 @@ public class RedisConfig {
     public CacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
 
         RedisCacheConfiguration configuration = RedisCacheConfiguration.defaultCacheConfig()
-            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())) // key serializer
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())) // value serializer
+            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                new StringRedisSerializer())) // key serializer
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                new GenericJackson2JsonRedisSerializer())) // value serializer
             .entryTtl(Duration.ofMinutes(30));// 캐시 수명
 
         return RedisCacheManager.RedisCacheManagerBuilder
@@ -40,9 +43,22 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory){
+    public RedisTemplate<String, Object> redisTemplate(
+        RedisConnectionFactory redisConnectionFactory) {
 
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+
+        return redisTemplate;
+    }
+
+    @Bean
+    public RedisTemplate<String, ChatMessageServiceDto> chatMessateRedisTemplate(
+        RedisConnectionFactory redisConnectionFactory) {
+
+        RedisTemplate<String, ChatMessageServiceDto> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         redisTemplate.setConnectionFactory(redisConnectionFactory);
