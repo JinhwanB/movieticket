@@ -1,17 +1,20 @@
 package com.jh.movieticket.chat.controller;
 
+import com.jh.movieticket.chat.dto.ChatRoomCreateDto;
 import com.jh.movieticket.chat.dto.ChatRoomServiceDto;
 import com.jh.movieticket.chat.dto.ChatRoomVerifyDto;
 import com.jh.movieticket.chat.dto.ChatRoomVerifyDto.Response;
 import com.jh.movieticket.chat.service.ChatRoomService;
 import com.jh.movieticket.config.GlobalApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,8 +69,8 @@ public class ChatRoomController {
     /**
      * 채팅방 조회 컨트롤러
      *
-     * @param verifyRequest 조회할 정보 dto
-     * @return 성공 시 200 코드와 조회된 채팅방 dto, 실패 시 에러코드와 에러메시지
+     * @param verifyRequest 채팅방 조회 정보 dto
+     * @return 성공시 200 코드와 조회된 채팅방 dto, 실패시 에러코드와 에러메시지
      */
     @GetMapping("/chatroom")
     public ResponseEntity<GlobalApiResponse<ChatRoomVerifyDto.Response>> chatRoomVerifyController(
@@ -81,15 +85,18 @@ public class ChatRoomController {
     /**
      * 페이징 처리된 전체 채팅방 리스트 조회 컨트롤러
      *
-     * @param pageable 페이징 정보
+     * @param verifyMemberId 조회하는 회원의 아이디
+     * @param pageable       페이징 정보
      * @return 페이징 처리된 전체 채팅방 dto 리스트
      */
-    @GetMapping
+    @GetMapping("/{verifyMemberId}")
     public ResponseEntity<GlobalApiResponse<Page<ChatRoomVerifyDto.Response>>> chatRoomVerifyAllController(
-        @PageableDefault
+        @NotBlank(message = "조회하는 회원 아이디를 입력해주세요.") @PathVariable String verifyMemberId,
+        @PageableDefault(sort = "id", direction = Direction.ASC)
         Pageable pageable) {
 
         Page<ChatRoomServiceDto> chatRoomServiceDtoList = chatRoomService.verifyAllChatRoom(
+            verifyMemberId,
             pageable);
         List<Response> responseList = chatRoomServiceDtoList.getContent().stream()
             .map(ChatRoomServiceDto::toVerifyResponse)
