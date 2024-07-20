@@ -17,4 +17,19 @@ public class ChatMessageServiceDto implements Serializable {
     private Long id; // pk
     private String senderId; // 메시지 보낸 회원 아이디
     private String message; // 보낸 메시지
+    private int notReadCount; // 안읽은 사람 수
+
+    /**
+     * ServiceDto -> VerifyResponse
+     *
+     * @return VerifyResponse
+     */
+    public ChatMessageVerifyDto.Response toVerifyResponse() {
+
+        return ChatMessageVerifyDto.Response.builder()
+            .id(id)
+            .senderId(senderId)
+            .message(message)
+            .build();
+    }
 }
