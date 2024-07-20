@@ -77,7 +77,7 @@ public class ChatRoomService {
     public void enterChatRoom(ChatRoomJoinDto.Request joinRequest) {
 
         ChatRoom chatRoom = chatRoomRepository.findById(joinRequest.getChatRoomId())
-            .orElse(null);
+            .orElseThrow(() -> new ChatRoomException(ChatRoomErrorCode.NOT_FOUND_CHAT_ROOM));
 
         List<ChatMessage> chatMessageList = chatMessageRepository.findAllByChatRoom(chatRoom);
         if (chatMessageList != null && !chatMessageList.isEmpty()) {
@@ -193,9 +193,10 @@ public class ChatRoomService {
 
         long count;
         String chatMessageKey = CacheName.CHAT_MESSAGE_CACHE_NAME + "::" + chatRoom.getId();
-        List<ChatMessageServiceDto> messageServiceDtoList = chatMessageRedisTemplate.opsForList()
-            .range(chatMessageKey, 0, -1);
-        if (messageServiceDtoList != null) { // redis에 채팅 메시지가 존재하는 경우
+        if (Boolean.TRUE.equals(
+            chatMessageRedisTemplate.hasKey(chatMessageKey))) { // redis에 채팅 메시지가 존재하는 경우
+            List<ChatMessageServiceDto> messageServiceDtoList = chatMessageRedisTemplate.opsForList()
+                .range(chatMessageKey, 0, -1);
             count = messageServiceDtoList.stream()
                 .filter(cmd -> !cmd.getSenderId().equals(verifyMemberId)
                     && cmd.getNotReadCount() != 0) // 읽지 않은 메시지 최대 100개까지 카운팅
