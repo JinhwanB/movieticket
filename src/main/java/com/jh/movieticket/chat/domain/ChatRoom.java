@@ -49,17 +49,6 @@ public class ChatRoom extends BaseTimeEntity {
     private LocalDateTime deleteDate; // 삭제날짜
 
     /**
-     * 채잍메시지 저장 메소드
-     *
-     * @param chatMessage 저장할 채팅 메시지
-     */
-    public void addChatMessage(ChatMessage chatMessage) {
-
-        chatMessageList = new ArrayList<>();
-        chatMessageList.add(chatMessage);
-    }
-
-    /**
      * Entity -> ServiceDto
      *
      * @return ServiceDto
@@ -70,9 +59,8 @@ public class ChatRoom extends BaseTimeEntity {
             .id(id)
             .adminId(admin.getUserId())
             .memberId(member.getUserId())
-            .chatMessageList(
-                chatMessageList != null ? chatMessageList.stream().map(ChatMessage::toServiceDto)
-                    .toList() : new ArrayList<>())
+            .chatMemberCount(chatMemberCount)
+            .notReadMessage(notReadMessage)
             .build();
     }
 }
