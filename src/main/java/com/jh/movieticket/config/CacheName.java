@@ -4,5 +4,5 @@ public class CacheName {
 
     public static final String MEMBER_CACHE_NAME = "member";
     public static final String THEATER_CACHE_NAME = "theater";
-    public static final String CHAT_ROOM_CACHE_NAME = "chatRoom";
+    public static final String CHAT_MESSAGE_CACHE_NAME = "chatMessage";
 }
