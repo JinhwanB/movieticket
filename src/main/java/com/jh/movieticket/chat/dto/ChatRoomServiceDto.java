@@ -1,7 +1,6 @@
 package com.jh.movieticket.chat.dto;
 
 import java.io.Serializable;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +17,24 @@ public class ChatRoomServiceDto implements Serializable {
     private Long id; // pk
     private String adminId; // 관리자 아이디
     private String memberId; // 회원 아이디
-    private List<ChatMessageServiceDto> chatMessageList; // 채팅메시지
+    private int chatMemberCount; // 채팅방 멤버 수
+    private long notReadMessage; // 안읽은 메시지 갯수
+
+    /**
+     * ServiceDto -> CreateDto
+     *
+     * @return CreateDto
+     */
+    public ChatRoomCreateDto.Response toCreateResponse() {
+
+        return ChatRoomCreateDto.Response.builder()
+            .id(id)
+            .adminId(adminId)
+            .memberId(memberId)
+            .chatMemberCount(chatMemberCount)
+            .notReadMessage(notReadMessage)
+            .build();
+    }
 
     /**
      * ServiceDto -> VerifyResponse
@@ -31,7 +47,7 @@ public class ChatRoomServiceDto implements Serializable {
             .id(id)
             .adminId(adminId)
             .memberId(memberId)
-            .chatMessageList(chatMessageList)
+            .notReadMessage(notReadMessage)
             .build();
     }
 }
