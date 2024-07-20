@@ -58,6 +58,7 @@ public class ChatMessage {
             .id(id)
             .message(message)
             .senderId(sender.getUserId())
+            .notReadCount(notReadCount)
             .build();
     }
 }
