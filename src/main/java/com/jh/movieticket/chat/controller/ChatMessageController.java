@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ public class ChatMessageController {
      * @param chatRoomId 채팅방 pk
      * @return 성공 시 200 코드와 채팅 메시지 dto 리스트, 실패 시 에러코드와 에러메시지
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{chatRoomId}")
     public ResponseEntity<GlobalApiResponse<List<ChatMessageVerifyDto.Response>>> chatMessageVerifyAllController(
         @Positive(message = "pk값은 0 또는 음수일 수 없습니다.") @PathVariable Long chatRoomId) {

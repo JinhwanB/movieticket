@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,7 @@ public class ChatRoomController {
      * @param createRequest 채팅방 생성 정보 dto
      * @return 성공 시 201 코드와 생성된 채팅방 dto, 실패 시 에러코드와 에러메시지
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/chatroom")
     public ResponseEntity<GlobalApiResponse<ChatRoomCreateDto.Response>> chatRoomCreateController(
         @Valid @RequestBody ChatRoomCreateDto.Request createRequest) {
@@ -59,6 +61,7 @@ public class ChatRoomController {
      * @param id 삭제할 채팅방 pk
      * @return 성공 시 200 코드, 실패 시 에러코드와 에러메시지
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @DeleteMapping("/chatroom/{id}")
     public ResponseEntity<GlobalApiResponse<?>> chatRoomDeleteController(
         @Positive(message = "pk값은 0 또는 음수일 수 없습니다.") @PathVariable Long id) {
@@ -73,6 +76,7 @@ public class ChatRoomController {
      *
      * @param joinRequest 입장 정보 dto
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/chatroom/join")
     public void joinChatRoom(@Valid @RequestBody ChatRoomJoinDto.Request joinRequest) {
 
@@ -84,6 +88,7 @@ public class ChatRoomController {
      *
      * @param outRequest 퇴장 정보 dto
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/chatroom/out/{chatRoomId}")
     public void outChatRoom(@Valid @RequestBody ChatRoomOutDto.Request outRequest) {
 
@@ -96,6 +101,7 @@ public class ChatRoomController {
      * @param verifyRequest 채팅방 조회 정보 dto
      * @return 성공시 200 코드와 조회된 채팅방 dto, 실패시 에러코드와 에러메시지
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/chatroom")
     public ResponseEntity<GlobalApiResponse<ChatRoomVerifyDto.Response>> chatRoomVerifyController(
         @Valid @RequestBody ChatRoomVerifyDto.Request verifyRequest) {
@@ -113,6 +119,7 @@ public class ChatRoomController {
      * @param pageable       페이징 정보
      * @return 페이징 처리된 전체 채팅방 dto 리스트
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{verifyMemberId}")
     public ResponseEntity<GlobalApiResponse<Page<ChatRoomVerifyDto.Response>>> chatRoomVerifyAllController(
         @NotBlank(message = "조회하는 회원 아이디를 입력해주세요.") @PathVariable String verifyMemberId,
