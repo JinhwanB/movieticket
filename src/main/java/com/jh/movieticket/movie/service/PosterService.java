@@ -5,12 +5,10 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.jh.movieticket.movie.exception.PosterErrorCode;
 import com.jh.movieticket.movie.exception.PosterException;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +33,9 @@ public class PosterService {
      * @return s3에 저장된 이미지 링크
      */
     public Map<String, String> upload(MultipartFile image) {
-        File uploadFile = convertToFile(image)
-            .orElseThrow(() -> new PosterException(PosterErrorCode.FAIL_CONVERT_TO_FILE));
 
-        String imageName = UUID.randomUUID() + uploadFile.getName(); // s3에 저장할 이미지 이름
-        String imageUrl = uploadToS3(uploadFile, imageName);
-
-        if (!uploadFile.delete()) { // 로컬에 저장되어 있는 이미지 제거
-            log.info("로컬에 저장한 이미지를 삭제 실패했습니다. 이미지 이름 : {}", uploadFile.getName());
-        }
+        String imageName = UUID.randomUUID() + image.getOriginalFilename(); // s3에 저장할 이미지 이름
+        String imageUrl = uploadToS3(image, imageName);
 
         Map<String, String> result = new HashMap<>();
         result.put("imageName", imageName);
@@ -69,41 +61,19 @@ public class PosterService {
     /**
      * s3에 이미지를 저장
      *
-     * @param uploadFile 저장할 이미지
+     * @param image 저장할 이미지
      * @param imageName  이미지 이름
      * @return 저장된 이미지 링크
      */
-    private String uploadToS3(File uploadFile, String imageName) {
+    private String uploadToS3(MultipartFile image, String imageName) {
 
-        amazonS3Client.putObject(new PutObjectRequest(bucket, imageName, uploadFile).withCannedAcl(
-            CannedAccessControlList.PublicRead));
-
-        return amazonS3Client.getUrl(bucket, imageName).toString();
-    }
-
-    /**
-     * 이미지를 로컬에 저장
-     *
-     * @param image 입력받은 이미지
-     * @return 로컬에 저장한 이미지
-     */
-    private Optional<File> convertToFile(MultipartFile image) {
-
-        File convertFile = new File(
-            System.getProperty("user.dir") + "/" + image.getOriginalFilename());
-        try {
-            // 이미지를 위 위치에 저장
-            if (convertFile.createNewFile()) {
-                try (FileOutputStream fos = new FileOutputStream(convertFile)) {
-                    fos.write(image.getBytes());
-                }
-
-                return Optional.of(convertFile);
-            }
-        } catch (IOException e) {
-            throw new PosterException(PosterErrorCode.FAIL_CONVERT_TO_FILE);
+        try(InputStream inputStream = image.getInputStream()){
+            amazonS3Client.putObject(new PutObjectRequest(bucket, imageName, inputStream, null).withCannedAcl(
+                CannedAccessControlList.PublicRead));
+        }catch (IOException e){
+            throw new PosterException(PosterErrorCode.FAIL_UPLOAD_IMAGE);
         }
 
-        return Optional.empty();
+        return amazonS3Client.getUrl(bucket, imageName).toString();
     }
 }

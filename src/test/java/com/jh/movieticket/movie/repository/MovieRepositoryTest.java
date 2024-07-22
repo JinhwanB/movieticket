@@ -102,7 +102,7 @@ class MovieRepositoryTest {
     @DisplayName("삭제되지 않은 영화 중 영화 이름으로 조회")
     void findByName() {
 
-        Movie movie = movieRepository.findByTitleAndDeleteDateIsNull("title1").orElse(null);
+        Movie movie = movieRepository.findByTitle("title1").orElse(null);
 
         assertThat(movie.getTitle()).isEqualTo("title1");
     }
@@ -111,7 +111,7 @@ class MovieRepositoryTest {
     @DisplayName("삭제되지 않은 영화 중 영화 이름 중복 확인")
     void duplicatedTitle() {
 
-        assertThat(movieRepository.existsByTitleAndDeleteDateIsNull("title1")).isEqualTo(true);
+        assertThat(movieRepository.existsByTitle("title1")).isEqualTo(true);
     }
 
     @Test

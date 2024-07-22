@@ -50,6 +50,7 @@ public class MovieService {
      * @param createRequest 영화 생성 정보 dto
      * @return 생성된 영화 서비스 dto
      */
+    @CachePut(key = "#createRequest.title", value = CacheName.MOVIE_CACHE_NAME)
     public MovieServiceDto createMovie(MultipartFile multipartFile,
         MovieCreateDto.Request createRequest) {
 
@@ -57,7 +58,7 @@ public class MovieService {
 
         String title = createRequest.getTitle();
 
-        if (movieRepository.existsByTitleAndDeleteDateIsNull(title)) { // 중복된 영화 이름이 경우
+        if (movieRepository.existsByTitle(title)) { // 중복된 영화 이름이 경우
             throw new MovieException(MovieErrorCode.EXIST_MOVIE_TITLE);
         }
 
@@ -101,10 +102,10 @@ public class MovieService {
         Map<String, String> uploadResult = posterService.upload(multipartFile);
 
         String originMovieTitle = modifyRequest.getOriginMovieTitle();
-        Movie originMovie = movieRepository.findByTitleAndDeleteDateIsNull(originMovieTitle)
+        Movie originMovie = movieRepository.findByTitle(originMovieTitle)
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
         if (!originMovie.getTitle().equals(modifyRequest.getTitle())
-            && movieRepository.existsByTitleAndDeleteDateIsNull(
+            && movieRepository.existsByTitle(
             modifyRequest.getTitle())) { // 영화 제목을 변경하고자 하며 변경할 제목이 이미 존재하는 경우
             throw new MovieException(MovieErrorCode.EXIST_MOVIE_TITLE);
         }
@@ -140,7 +141,7 @@ public class MovieService {
      */
     public void deleteMovie(Long id) {
 
-        Movie movie = movieRepository.findByIdAndDeleteDateIsNull(id)
+        Movie movie = movieRepository.findById(id)
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
 
         Cache cache = redisCacheManager.getCache(CacheName.MOVIE_CACHE_NAME);
@@ -166,7 +167,7 @@ public class MovieService {
     @Cacheable(key = "#movieTitle", value = CacheName.MOVIE_CACHE_NAME)
     public MovieServiceDto verifyMovie(String movieTitle) {
 
-        Movie movie = movieRepository.findByTitleAndDeleteDateIsNull(movieTitle)
+        Movie movie = movieRepository.findByTitle(movieTitle)
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
 
         return movie.toServiceDto();
