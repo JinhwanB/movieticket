@@ -4,6 +4,8 @@ import com.jh.movieticket.auth.TokenException;
 import com.jh.movieticket.chat.exception.ChatRoomException;
 import com.jh.movieticket.mail.exception.MailException;
 import com.jh.movieticket.member.exception.MemberException;
+import com.jh.movieticket.movie.exception.MovieException;
+import com.jh.movieticket.movie.exception.PosterException;
 import com.jh.movieticket.theater.exception.TheaterException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -32,7 +34,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<GlobalApiResponse<?>> handleNotFoundException(
         NoHandlerFoundException e) {
 
-        log.error("404 NotFound = {}", e.getMessage());
+        log.error("404 NotFound", e);
 
         return new ResponseEntity<>(
             GlobalApiResponse.toGlobalResponseFail(HttpStatus.NOT_FOUND, "요청한 페이지를 찾을 수 없습니다."),
@@ -44,7 +46,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<GlobalApiResponse<?>> handleNotSupportedException(
         HttpRequestMethodNotSupportedException e) {
 
-        log.error("405 NotSupported = {}", e.getMessage());
+        log.error("405 NotSupported", e);
 
         return new ResponseEntity<>(
             GlobalApiResponse.toGlobalResponseFail(HttpStatus.METHOD_NOT_ALLOWED,
@@ -57,7 +59,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<List<GlobalApiResponse<?>>> handleValidException(
         MethodArgumentNotValidException e) {
 
-        log.error("request 유효성 검사 실패");
+        log.error("request 유효성 검사 실패", e);
 
         List<GlobalApiResponse<?>> list = new ArrayList<>();
         BindingResult bindingResult = e.getBindingResult();
@@ -77,7 +79,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<List<GlobalApiResponse<?>>> handleValidException2(
         ConstraintViolationException e) {
 
-        log.error("pathVariable 또는 requestParam 유효성 검사 실패");
+        log.error("pathVariable 또는 requestParam 유효성 검사 실패", e);
 
         List<GlobalApiResponse<?>> list = new ArrayList<>();
         Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
@@ -96,7 +98,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<GlobalApiResponse<String>> handleMissingPathVariableException(
         MissingPathVariableException e) {
 
-        log.error("필수 PathVariable 값 존재하지 않음 exception = {}", e.getMessage());
+        log.error("필수 PathVariable 값 존재하지 않음", e);
 
         return ResponseEntity.badRequest().body(
             GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
@@ -119,7 +121,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MemberException.class)
     private ResponseEntity<GlobalApiResponse<?>> handleMemberException(MemberException e) {
 
-        log.error("회원 관련 exception = {}", e.getMemberErrorCode().getMessage());
+        log.error("회원 관련 exception", e);
 
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
@@ -130,7 +132,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MailException.class)
     private ResponseEntity<GlobalApiResponse<?>> handleMailException(MailException e) {
 
-        log.error("메일 관련 exception = {}", e.getMailErrorCode().getMessage());
+        log.error("메일 관련 exception", e);
 
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
@@ -141,7 +143,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TokenException.class)
     private ResponseEntity<GlobalApiResponse<?>> handleTokenException(TokenException e) {
 
-        log.error("토큰 관련 exception = {}", e.getTokenErrorCode().getMessage());
+        log.error("토큰 관련 exception", e);
 
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
@@ -168,5 +170,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
                 e.getChatRoomErrorCode().getMessage()));
+      
+    // 영화 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(MovieException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleMovieException(MovieException e){
+
+        log.error("영화 관련 exception", e);
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getMovieErrorCode().getMessage()));
+    }
+
+    // 포스터 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(PosterException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handlePosterException(PosterException e){
+
+        log.error("포스터 관련 exception", e);
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getPosterErrorCode().getMessage()));
     }
 }

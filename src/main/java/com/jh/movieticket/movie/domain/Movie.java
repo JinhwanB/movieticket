@@ -1,31 +1,42 @@
 package com.jh.movieticket.movie.domain;
 
 import com.jh.movieticket.config.BaseTimeEntity;
+import com.jh.movieticket.movie.dto.MovieServiceDto;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
+@SQLRestriction("deletedDate IS NULL")
 public class Movie extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String posterName; // 포스터 이미지 파일 이름
 
     @Column(nullable = false)
     private String posterUrl; // 포스터 이미지 링크
@@ -35,6 +46,12 @@ public class Movie extends BaseTimeEntity {
 
     @Column(nullable = false)
     private String director; // 감독
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovieActor> movieActorList; // 배우
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovieGenre> movieGenreList; // 장르
 
     @Column(nullable = false, length = 5000)
     private String description; // 영화에 대한 설명
@@ -60,4 +77,61 @@ public class Movie extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제 날짜
+
+    /**
+     * 연관관계 저장용 메소드
+     *
+     * @param movieActor
+     */
+    public void addMovieActor(MovieActor movieActor) {
+
+        movieActorList = movieActorList == null ? new ArrayList<>() : movieActorList;
+        movieActorList.add(movieActor);
+    }
+
+    /**
+     * 연관관계 저장용 메소드
+     *
+     * @param movieGenre
+     */
+    public void addMovieGenre(MovieGenre movieGenre) {
+
+        movieGenreList = movieGenreList == null ? new ArrayList<>() : movieGenreList;
+        movieGenreList.add(movieGenre);
+    }
+
+    /**
+     * Entity -> ServiceDto
+     *
+     * @return ServiceDto
+     */
+    public MovieServiceDto toServiceDto() {
+
+        List<String> actorList =
+            (movieActorList == null || movieActorList.isEmpty()) ? null : movieActorList.stream()
+                .map(ma -> ma.getActor().getName())
+                .toList();
+
+        List<String> genreList =
+            (movieGenreList == null || movieGenreList.isEmpty()) ? null : movieGenreList.stream()
+                .map(mg -> mg.getGenre().getName())
+                .toList();
+
+        return MovieServiceDto.builder()
+            .id(id)
+            .posterName(posterName)
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseDate(releaseDate)
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType)
+            .build();
+    }
 }
