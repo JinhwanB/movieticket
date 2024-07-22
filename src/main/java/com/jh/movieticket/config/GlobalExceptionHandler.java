@@ -170,24 +170,38 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
                 e.getChatRoomErrorCode().getMessage()));
-      
+    }
+
     // 영화 관련 에러 핸들러 -> 400 에러
     @ExceptionHandler(MovieException.class)
-    private ResponseEntity<GlobalApiResponse<?>> handleMovieException(MovieException e){
+    private ResponseEntity<GlobalApiResponse<?>> handleMovieException(MovieException e) {
 
         log.error("영화 관련 exception", e);
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getMovieErrorCode().getMessage()));
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+                e.getMovieErrorCode().getMessage()));
     }
 
     // 포스터 관련 에러 핸들러 -> 400 에러
     @ExceptionHandler(PosterException.class)
-    private ResponseEntity<GlobalApiResponse<?>> handlePosterException(PosterException e){
+    private ResponseEntity<GlobalApiResponse<?>> handlePosterException(PosterException e) {
 
         log.error("포스터 관련 exception", e);
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getPosterErrorCode().getMessage()));
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+                e.getPosterErrorCode().getMessage()));
+    }
+
+    // 예상하지 못한 에러 핸들러 -> 500 에러
+    @ExceptionHandler(Exception.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleUnexpectedException(Exception e) {
+
+        log.error("예상하지 못한 에러", e);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.INTERNAL_SERVER_ERROR,
+                "예상치 못한 에러가 발생했습니다. 서버 관리자에게 문의하세요. message = " + e.getMessage()));
     }
 }
