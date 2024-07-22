@@ -46,6 +46,14 @@ public class SecurityConfiguration {
                     .requestMatchers(HttpMethod.POST, "/theaters/theater").authenticated()
                     .requestMatchers(HttpMethod.PUT, "/theaters/theater").authenticated()
                     .requestMatchers("/theaters/theater/{id}").authenticated()
+                    .requestMatchers("/chatmessages/{chatRoomId}").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/chatrooms/chatroom").authenticated()
+                    .requestMatchers("/chatrooms/chatroom/{id}").authenticated()
+                    .requestMatchers("/chatrooms/chatroom/join").authenticated()
+                    .requestMatchers("/chatrooms/chatroom/out/{chatRoomId}").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/chatrooms/chatroom").authenticated()
+                    .requestMatchers("chatrooms/{verifyMemberId}").authenticated()
+
                     .anyRequest().permitAll()
             )
             .exceptionHandling(exception ->
