@@ -42,7 +42,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
 
     runtimeOnly 'com.h2database:h2' // testDB
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:2.7.4'
 
     annotationProcessor 'org.projectlombok:lombok'
 
