@@ -17,6 +17,8 @@ spring:
         show_sql: true
         format_sql: true
         highlight_sql: true
+        default_batch_fetch_size: 100
+
   datasource:
     username: ${DB_USER_NAME} # 환경 변수
     password: ${DB_PWD} # 환경 변수
@@ -52,6 +54,24 @@ spring:
   # JWT 시크릿 키
   jwt:
     secret: ${JWT_SECRET} # 환경 변수
+
+  # multipart
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+# S3
+aws:
+  s3:
+    bucket: ${S3_BUCKET_NAME}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+  region:
+    static: ap-northeast-2
+  stack:
+    auto: false
 
 # 로그
 logging:
