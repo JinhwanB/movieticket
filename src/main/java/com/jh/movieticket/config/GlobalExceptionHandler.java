@@ -5,6 +5,7 @@ import com.jh.movieticket.mail.exception.MailException;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.movie.exception.MovieException;
 import com.jh.movieticket.movie.exception.PosterException;
+import com.jh.movieticket.theater.exception.TheaterException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ public class GlobalExceptionHandler {
 
     // 404 에러 핸들러
     @ExceptionHandler(NoHandlerFoundException.class)
-    private ResponseEntity<GlobalApiResponse<?>> handleNotFoundException(NoHandlerFoundException e) {
+    private ResponseEntity<GlobalApiResponse<?>> handleNotFoundException(
+        NoHandlerFoundException e) {
 
         log.error("404 NotFound", e);
 
@@ -44,8 +46,9 @@ public class GlobalExceptionHandler {
 
         log.error("405 NotSupported", e);
 
-        return new ResponseEntity<>(GlobalApiResponse.toGlobalResponseFail(HttpStatus.METHOD_NOT_ALLOWED,
-            "해당 url을 지원하지 않습니다. HTTP Method(GET, PUT, POST, DELETE)가 정확한지 확인해주세요."),
+        return new ResponseEntity<>(
+            GlobalApiResponse.toGlobalResponseFail(HttpStatus.METHOD_NOT_ALLOWED,
+                "해당 url을 지원하지 않습니다. HTTP Method(GET, PUT, POST, DELETE)가 정확한지 확인해주세요."),
             HttpStatus.METHOD_NOT_ALLOWED);
     }
 
@@ -60,7 +63,8 @@ public class GlobalExceptionHandler {
         BindingResult bindingResult = e.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
         for (FieldError fieldError : fieldErrors) {
-            GlobalApiResponse<?> response = GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+            GlobalApiResponse<?> response = GlobalApiResponse.toGlobalResponseFail(
+                HttpStatus.BAD_REQUEST,
                 fieldError.getDefaultMessage());
             list.add(response);
         }
@@ -78,7 +82,8 @@ public class GlobalExceptionHandler {
         List<GlobalApiResponse<?>> list = new ArrayList<>();
         Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
         for (ConstraintViolation<?> constraintViolation : constraintViolations) {
-            GlobalApiResponse<Object> response = GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+            GlobalApiResponse<Object> response = GlobalApiResponse.toGlobalResponseFail(
+                HttpStatus.BAD_REQUEST,
                 constraintViolation.getMessage());
             list.add(response);
         }
@@ -102,7 +107,8 @@ public class GlobalExceptionHandler {
         log.error("회원 관련 exception", e);
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getMemberErrorCode().getMessage()));
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+                e.getMemberErrorCode().getMessage()));
     }
 
     // 메일 관련 에러 핸들러 -> 400 에러
@@ -118,12 +124,24 @@ public class GlobalExceptionHandler {
 
     // 토큰 관련 에러 핸들러 -> 400 에러
     @ExceptionHandler(TokenException.class)
-    private ResponseEntity<GlobalApiResponse<?>> handleTokenException(TokenException e){
+    private ResponseEntity<GlobalApiResponse<?>> handleTokenException(TokenException e) {
 
         log.error("토큰 관련 exception", e);
 
         return ResponseEntity.badRequest()
-            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST, e.getTokenErrorCode().getMessage()));
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+                e.getTokenErrorCode().getMessage()));
+    }
+
+    // 상영관 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(TheaterException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleTheaterException(TheaterException e) {
+
+        log.error("상영관 관련 exception = {}", e.getTheaterErrorCode().getMessage());
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+                e.getTheaterErrorCode().getMessage()));
     }
 
     // 영화 관련 에러 핸들러 -> 400 에러

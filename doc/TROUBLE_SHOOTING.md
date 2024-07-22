@@ -1,0 +1,1 @@
+join fetch 사용 시 자식 엔티티가 비어있는 경우 부모 엔티티 자체를 select 하지 않음 -> left join fetch 적용으로 해결

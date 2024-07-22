@@ -43,6 +43,9 @@ public class SecurityConfiguration {
                     .requestMatchers(HttpMethod.POST, "/movies/movie").authenticated()
                     .requestMatchers(HttpMethod.PUT, "/movies/movie").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/movies/movie/{id}").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/theaters/theater").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/theaters/theater").authenticated()
+                    .requestMatchers("/theaters/theater/{id}").authenticated()
                     .anyRequest().permitAll()
             )
             .exceptionHandling(exception ->
