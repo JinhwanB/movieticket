@@ -8,6 +8,7 @@ import com.jh.movieticket.movie.domain.MovieActor;
 import com.jh.movieticket.movie.domain.MovieGenre;
 import com.jh.movieticket.movie.dto.MovieCreateDto;
 import com.jh.movieticket.movie.dto.MovieModifyDto;
+import com.jh.movieticket.movie.dto.MovieSearchDto;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.exception.MovieErrorCode;
 import com.jh.movieticket.movie.exception.MovieException;
@@ -23,6 +24,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -167,6 +171,25 @@ public class MovieService {
             .orElseThrow(() -> new MovieException(MovieErrorCode.NOT_FOUND_MOVIE));
 
         return movie.toServiceDto();
+    }
+
+    /**
+     * 영화 검색 서비스
+     *
+     * @param searchRequest 검색어 및 필어 정보
+     * @param pageable      페이징 정보
+     * @return 페이징 처리된 영화 서비스 dto
+     */
+    @Transactional(readOnly = true)
+    public Page<MovieServiceDto> searchMovie(MovieSearchDto.Request searchRequest,
+        Pageable pageable) {
+
+        Page<Movie> searchResult = movieRepository.findBySearchOption(searchRequest, pageable);
+        List<MovieServiceDto> movieServiceDtoList = searchResult.getContent().stream()
+            .map(Movie::toServiceDto)
+            .toList();
+
+        return new PageImpl<>(movieServiceDtoList, pageable, movieServiceDtoList.size());
     }
 
     /**

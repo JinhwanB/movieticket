@@ -3,6 +3,9 @@ package com.jh.movieticket.movie.controller;
 import com.jh.movieticket.config.GlobalApiResponse;
 import com.jh.movieticket.movie.dto.MovieCreateDto;
 import com.jh.movieticket.movie.dto.MovieModifyDto;
+import com.jh.movieticket.movie.dto.MovieSearchDto;
+import com.jh.movieticket.movie.dto.MovieSearchDto.Request;
+import com.jh.movieticket.movie.dto.MovieSearchDto.Response;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.dto.MovieVerifyDto;
 import com.jh.movieticket.movie.service.MovieService;
@@ -10,16 +13,23 @@ import com.jh.movieticket.validation.IsImage;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -80,7 +90,8 @@ public class MovieController {
      */
     @DeleteMapping("/movie/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalApiResponse<?>> movieDeleteController(@Positive(message = "pk값은 0 또는 음수일 수 없습니다.") @PathVariable Long id) {
+    public ResponseEntity<GlobalApiResponse<?>> movieDeleteController(
+        @Positive(message = "pk값은 0 또는 음수일 수 없습니다.") @PathVariable Long id) {
 
         movieService.deleteMovie(id);
 
@@ -101,5 +112,34 @@ public class MovieController {
 
         return ResponseEntity.ok(
             GlobalApiResponse.toGlobalResponse(HttpStatus.OK, serviceDto.toVerifyResponse()));
+    }
+
+    /**
+     * 영화 검색 컨트롤러
+     *
+     * @param searchRequest 검색어 및 필터 정보
+     * @return 성공 시 200 코드와 검색 결과, 실패 시 에러 코드와 에러메시지 반환
+     */
+    @GetMapping
+    public ResponseEntity<GlobalApiResponse<Page<MovieSearchDto.Response>>> movieSearchController(
+        @RequestBody Request searchRequest) {
+
+        List<String> acceptOrderBy = List.of("reservation", "grade", "audience");
+        if (StringUtils.hasText(searchRequest.getOrderBy()) && !acceptOrderBy.contains(
+            searchRequest.getOrderBy())) { // 정렬이 허용되지 않는 단어로 들어오는 경우
+            searchRequest = searchRequest.toBuilder()
+                .orderBy(null)
+                .build();
+        }
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<MovieServiceDto> movieServiceDtos = movieService.searchMovie(searchRequest, pageable);
+        List<Response> responseList = movieServiceDtos.getContent().stream()
+            .map(MovieServiceDto::toSearchResponse)
+            .toList();
+        Page<MovieSearchDto.Response> result = new PageImpl<>(responseList, pageable,
+            responseList.size());
+
+        return ResponseEntity.ok(GlobalApiResponse.toGlobalResponse(HttpStatus.OK, result));
     }
 }

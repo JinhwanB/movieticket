@@ -17,6 +17,7 @@ import com.jh.movieticket.movie.domain.ScreenType;
 import com.jh.movieticket.movie.dto.MovieCreateDto;
 import com.jh.movieticket.movie.dto.MovieCreateDto.Request;
 import com.jh.movieticket.movie.dto.MovieModifyDto;
+import com.jh.movieticket.movie.dto.MovieSearchDto;
 import com.jh.movieticket.movie.dto.MovieServiceDto;
 import com.jh.movieticket.movie.service.MovieService;
 import java.io.FileInputStream;
@@ -29,6 +30,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -44,6 +49,9 @@ class MovieControllerTest {
     MovieCreateDto.Request createRequest;
     MovieModifyDto.Request modifyRequest;
     MovieServiceDto movieServiceDto;
+    MovieSearchDto.Request searchRequest;
+    Page<MovieServiceDto> movieServiceDtos;
+    Pageable pageable;
 
     @Autowired
     WebApplicationContext context;
@@ -110,6 +118,19 @@ class MovieControllerTest {
             .actorList(actorList)
             .originMovieTitle("title")
             .build();
+
+        searchRequest = MovieSearchDto.Request.builder()
+            .genre("genre")
+            .orderBy("reservation")
+            .title("title")
+            .screenType(ScreenType.NOW)
+            .build();
+
+        pageable = PageRequest.of(0, 10);
+
+        List<MovieServiceDto> movieServiceDtoList = List.of(movieServiceDto);
+        movieServiceDtos = new PageImpl<>(movieServiceDtoList, pageable,
+            movieServiceDtoList.size());
     }
 
     @Test
@@ -502,5 +523,32 @@ class MovieControllerTest {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[0].status").value(400));
+    }
+
+    @Test
+    @DisplayName("영화 검색 컨트롤러")
+    void MovieSearchController() throws Exception {
+
+        when(movieService.searchMovie(any(), any())).thenReturn(movieServiceDtos);
+
+        mockMvc.perform(get("/movies")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.data").exists());
+    }
+
+    @Test
+    @DisplayName("영화 검색 컨트롤러 실패 - api 경로 틀림")
+    void MovieSearchControllerFail1() throws Exception {
+
+        mockMvc.perform(get("/movie")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest)))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404));
     }
 }

@@ -7,6 +7,7 @@ import com.jh.movieticket.movie.domain.Genre;
 import com.jh.movieticket.movie.domain.Movie;
 import com.jh.movieticket.movie.domain.MovieGenre;
 import com.jh.movieticket.movie.domain.ScreenType;
+import com.jh.movieticket.movie.dto.MovieSearchDto;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +16,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @Import(JpaAuditingConfig.class)
 class MovieRepositoryTest {
+
+    Pageable pageable;
+    MovieSearchDto.Request searchRequest;
 
     @Autowired
     MovieRepository movieRepository;
@@ -27,7 +34,7 @@ class MovieRepositoryTest {
     GenreRepository genreRepository;
 
     @BeforeEach
-    void before(){
+    void before() {
 
         Genre genre1 = Genre.builder()
             .name("느와르")
@@ -67,8 +74,10 @@ class MovieRepositoryTest {
         Movie savedMovie1 = movieRepository.save(movie1);
         Movie savedMovie2 = movieRepository.save(movie2);
 
-        List<MovieGenre> list1 = List.of(MovieGenre.builder().genre(savedGenre1).movie(savedMovie1).build());
-        List<MovieGenre> list2 = List.of(MovieGenre.builder().genre(savedGenre2).movie(savedMovie2).build());
+        List<MovieGenre> list1 = List.of(
+            MovieGenre.builder().genre(savedGenre1).movie(savedMovie1).build());
+        List<MovieGenre> list2 = List.of(
+            MovieGenre.builder().genre(savedGenre2).movie(savedMovie2).build());
 
         Movie movieWithGenre1 = savedMovie1.toBuilder()
             .movieGenreList(list1)
@@ -78,11 +87,20 @@ class MovieRepositoryTest {
             .build();
         movieRepository.save(movieWithGenre1);
         movieRepository.save(movieWithGenre2);
+
+        pageable = PageRequest.of(0, 10);
+
+        searchRequest = MovieSearchDto.Request.builder()
+            .orderBy("reservation")
+            .title("title")
+            .genre(null)
+            .screenType(ScreenType.NOW)
+            .build();
     }
 
     @Test
     @DisplayName("삭제되지 않은 영화 중 영화 이름으로 조회")
-    void findByName(){
+    void findByName() {
 
         Movie movie = movieRepository.findByTitle("title1").orElse(null);
 
@@ -91,8 +109,17 @@ class MovieRepositoryTest {
 
     @Test
     @DisplayName("삭제되지 않은 영화 중 영화 이름 중복 확인")
-    void duplicatedTitle(){
+    void duplicatedTitle() {
 
         assertThat(movieRepository.existsByTitle("title1")).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("동적 검색")
+    void search() {
+
+        Page<Movie> bySearchOption = movieRepository.findBySearchOption(searchRequest, pageable);
+
+        assertThat(bySearchOption.getTotalElements()).isEqualTo(1);
     }
 }

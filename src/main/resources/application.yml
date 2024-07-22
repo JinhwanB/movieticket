@@ -17,6 +17,8 @@ spring:
         show_sql: true
         format_sql: true
         highlight_sql: true
+        default_batch_fetch_size: 100
+
   datasource:
     username: ${MYSQL_USER_NAME} # 환경 변수
     password: ${MYSQL_PWD} # 환경 변수

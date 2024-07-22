@@ -33,7 +33,7 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
     @JsonSerialize(using = LocalDateSerializer.class)
     @JsonDeserialize(using = LocalDateDeserializer.class)
     private LocalDate releaseDate; // 개봉 날짜
-    
+
     private double gradeAvg; // 평균 평점
     private double reservationRate; // 예매율
     private long totalAudienceCnt; // 누적 관객 수
@@ -97,6 +97,32 @@ public class MovieServiceDto implements Serializable { // 영화 서비스 레�
     public MovieVerifyDto.Response toVerifyResponse() {
 
         return MovieVerifyDto.Response.builder()
+            .id(id)
+            .posterUrl(posterUrl)
+            .title(title)
+            .director(director)
+            .actorList(actorList)
+            .genreList(genreList)
+            .description(description)
+            .totalShowTime(totalShowTime)
+            .releaseYear(releaseDate.getYear())
+            .releaseMonth(releaseDate.getMonthValue())
+            .releaseDay(releaseDate.getDayOfMonth())
+            .gradeAvg(gradeAvg)
+            .reservationRate(reservationRate)
+            .totalAudienceCnt(totalAudienceCnt)
+            .screenType(screenType)
+            .build();
+    }
+
+    /**
+     * ServiceDto -> SearchDto
+     *
+     * @return SearchDto
+     */
+    public MovieSearchDto.Response toSearchResponse() {
+
+        return MovieSearchDto.Response.builder()
             .id(id)
             .posterUrl(posterUrl)
             .title(title)

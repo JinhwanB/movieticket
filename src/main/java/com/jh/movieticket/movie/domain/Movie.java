@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -48,11 +47,9 @@ public class Movie extends BaseTimeEntity {
     @Column(nullable = false)
     private String director; // 감독
 
-    @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MovieActor> movieActorList; // 배우
 
-    @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MovieGenre> movieGenreList; // 장르
 
@@ -83,21 +80,23 @@ public class Movie extends BaseTimeEntity {
 
     /**
      * 연관관계 저장용 메소드
+     *
      * @param movieActor
      */
-    public void addMovieActor(MovieActor movieActor){
+    public void addMovieActor(MovieActor movieActor) {
 
-        movieActorList = new ArrayList<>();
+        movieActorList = movieActorList == null ? new ArrayList<>() : movieActorList;
         movieActorList.add(movieActor);
     }
 
     /**
      * 연관관계 저장용 메소드
+     *
      * @param movieGenre
      */
-    public void addMovieGenre(MovieGenre movieGenre){
+    public void addMovieGenre(MovieGenre movieGenre) {
 
-        movieGenreList = new ArrayList<>();
+        movieGenreList = movieGenreList == null ? new ArrayList<>() : movieGenreList;
         movieGenreList.add(movieGenre);
     }
 
