@@ -29,9 +29,9 @@ jobs:
                 - name: JWT_SECRET
                   value: ${{ secrets.JWT_SECRET }}
                 - name: MAIL_ID
-                  value: paewhal20
-                - name: MAIL_PW
                   value: ${{ secrets.MAIL_ID }}
+                - name: MAIL_PW
+                  value: ${{ secrets.MAIL_PW }}
                 - name: DB_PWD
                   value: ${{ secrets.DB_PWD }}
                 - name: DB_USER_NAME
