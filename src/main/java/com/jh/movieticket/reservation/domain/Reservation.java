@@ -3,6 +3,7 @@ package com.jh.movieticket.reservation.domain;
 import com.jh.movieticket.config.BaseTimeEntity;
 import com.jh.movieticket.member.domain.Member;
 import com.jh.movieticket.movie.domain.MovieSchedule;
+import com.jh.movieticket.reservation.dto.ReservationServiceDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,18 +12,27 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true)
+@SQLRestriction("delete_date IS NULL")
+@Table(
+    uniqueConstraints = @UniqueConstraint(
+        columnNames = {"reservation_number", "delete_date"}
+    )
+)
 public class Reservation extends BaseTimeEntity {
 
     @Id
@@ -45,4 +55,20 @@ public class Reservation extends BaseTimeEntity {
 
     @Column
     private LocalDateTime deleteDate; // 삭제날짜
+
+    /**
+     * Entity -> ServiceDto
+     *
+     * @return ServiceDto
+     */
+    public ReservationServiceDto toServiceDto() {
+
+        return ReservationServiceDto.builder()
+            .movieSchedule(movieSchedule.toServiceDto())
+            .reservationNumber(reservationNumber)
+            .id(id)
+            .seatNo(seatNo)
+            .member(member.toServiceDto())
+            .build();
+    }
 }
