@@ -1,6 +1,7 @@
 package com.jh.movieticket.config;
 
 import com.jh.movieticket.chat.dto.ChatMessageServiceDto;
+import com.jh.movieticket.reservation.dto.ReservationServiceDto;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -59,6 +60,18 @@ public class RedisConfig {
         RedisConnectionFactory redisConnectionFactory) {
 
         RedisTemplate<String, ChatMessageServiceDto> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+
+        return redisTemplate;
+    }
+
+    @Bean
+    public RedisTemplate<String, ReservationServiceDto> reservationRedisTemplate(
+        RedisConnectionFactory redisConnectionFactory) {
+
+        RedisTemplate<String, ReservationServiceDto> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         redisTemplate.setConnectionFactory(redisConnectionFactory);
