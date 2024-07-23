@@ -6,6 +6,7 @@ import com.jh.movieticket.mail.exception.MailException;
 import com.jh.movieticket.member.exception.MemberException;
 import com.jh.movieticket.movie.exception.MovieException;
 import com.jh.movieticket.movie.exception.PosterException;
+import com.jh.movieticket.reservation.exception.ReservationException;
 import com.jh.movieticket.theater.exception.TheaterException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -192,6 +193,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
             .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
                 e.getPosterErrorCode().getMessage()));
+    }
+
+    // 예약 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(ReservationException.class)
+    private ResponseEntity<GlobalApiResponse<?>> handleReservationException(
+        ReservationException e) {
+
+        log.error("예약 관련 exception", e);
+
+        return ResponseEntity.badRequest()
+            .body(GlobalApiResponse.toGlobalResponseFail(HttpStatus.BAD_REQUEST,
+                e.getReservationErrorCode().getMessage()));
     }
 
     // 예상하지 못한 에러 핸들러 -> 500 에러
